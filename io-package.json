@@ -1,0 +1,97 @@
+{
+    "common": {
+        "name": "chargeamps",
+        "version": "0.0.1",
+        "news": {
+            "0.0.1": {
+                "en": "initial release",
+                "de": "Erstveröffentlichung",
+                "ru": "Начальная версия",
+                "pt": "lançamento inicial",
+                "nl": "Eerste uitgave",
+                "fr": "Première version",
+                "it": "Versione iniziale",
+                "es": "Versión inicial",
+                "pl": "Pierwsze wydanie",
+                "uk": "Початкова версія",
+                "zh-cn": "首次出版"
+            }
+        },
+        "titleLang": {
+            "en": "ChargeAmps",
+            "de": "Chargeamps",
+            "ru": "Chargeamps",
+            "pt": "Chargeamps",
+            "nl": "Chargeamps",
+            "fr": "Chargée",
+            "it": "Chargeamps",
+            "es": "Cargadores",
+            "pl": "CharGeamps",
+            "uk": "Зарядка",
+            "zh-cn": "费用"
+        },
+        "desc": {
+            "en": "controll ChargeAmps Wallbox API",
+            "de": "Controll Chargeamps Wallbox -API",
+            "ru": "контроль API Wallbox chargeamps",
+            "pt": "Control Chargeamps Wallbox API",
+            "nl": "Control Chargeamps Wallbox API",
+            "fr": "API CORPORD CHARGEAMPS WALDBOX",
+            "it": "Controlla Chargeamps Wallbox API",
+            "es": "API de Wallbox de control de cargadores de control",
+            "pl": "kontrolować API Wallbox Wallbox",
+            "uk": "Контроль API Wallbox API Wallbox",
+            "zh-cn": "控制Chargeamps Wallbox API"
+        },
+        "authors": [
+            "michipi85 <sammer.michael.ms@gmail.com>"
+        ],
+        "keywords": [
+            "charge amps",
+            "wallbox",
+            "halo"
+        ],
+        "licenseInformation": {
+            "type": "free",
+            "license": "MIT"
+        },
+        "platform": "Javascript/Node.js",
+        "icon": "chargeamps.png",
+        "enabled": true,
+        "extIcon": "https://raw.githubusercontent.com/michipi85/ioBroker.chargeamps/main/admin/chargeamps.png",
+        "readme": "https://github.com/michipi85/ioBroker.chargeamps/blob/main/README.md",
+        "loglevel": "info",
+        "tier": 3,
+        "mode": "daemon",
+        "type": "vehicle",
+        "compact": true,
+        "connectionType": "cloud",
+        "dataSource": "poll",
+        "adminUI": {
+            "config": "json",
+            "tab": "materialize"
+        },
+        "dependencies": [
+            {
+                "js-controller": ">=6.0.11",
+                "axios": "^1.5.0"
+            }
+        ],
+        "globalDependencies": [
+            {
+                "admin": "7.0.23"
+            }
+        ]
+    },
+    "encryptedNative": ["password"],
+    "protectedNative": ["password"],
+    "native": {
+		"email": "",
+		"password": "",
+		"apikey": "",
+		"Interval": 30
+    },
+    "objects": [],
+    "instanceObjects": []
+
+}

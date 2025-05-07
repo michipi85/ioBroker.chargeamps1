@@ -1,0 +1,26 @@
+{
+    "i18n": true,
+    "type": "panel",
+    "items": {
+		"email": {
+			"type": "text",
+			"label": "E-Mail",
+			"newLine": true
+		},
+		"password": {
+			"type": "text",
+			"label": "Password",
+			"newLine": true
+		},
+		"apikey": {
+			"type": "text",
+			"label": "API-Key",
+			"newLine": true
+		},
+		"Interval": {
+			"type": "text",
+			"label": "Refresh Interval",
+			"newLine": true
+        }
+    }
+}
