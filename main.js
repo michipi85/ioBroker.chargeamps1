@@ -3,7 +3,7 @@
 // API-Version: https://eapi.charge.space/swagger/index.html v5
 
 const utils = require('@iobroker/adapter-core');
-const axios = require('axios').default;
+const axios = require('axios');
 
 class Chargeamps extends utils.Adapter {
     /**
