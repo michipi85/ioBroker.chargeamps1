@@ -12,7 +12,7 @@
 			"label": "Password",
 			"newLine": true
 		},
-		"apikey": {
+		"apiKey": {
 			"type": "text",
 			"label": "API-Key",
 			"newLine": true

@@ -44,7 +44,7 @@ class Chargeamps extends utils.Adapter {
                 native: {},
             });
 
-            const loginSuccess = await this.chargeampsLogin(this.config.email, this.config.password, this.config.apikey);
+            const loginSuccess = await this.chargeampsLogin(this.config.email, this.config.password, this.config.apiKey);
             if (loginSuccess) {
                 this.log.info('Logged in successfully');
 
@@ -101,7 +101,7 @@ class Chargeamps extends utils.Adapter {
                 const command = parts.pop();
                 const connectorId = parts[4] || null;
 
-                if (command === 'Reboot') {
+                if (command && command === 'Reboot') {
                     await this.chargeampsReboot(chargePointId);
                 } else if (command.startsWith('RemoteStart_')) {
                     if (connectorId) {
@@ -152,7 +152,7 @@ class Chargeamps extends utils.Adapter {
                 url,
                 headers: {
                     'Content-Type': 'application/json',
-                    apiKey: this.config.apikey,
+                    apiKey: this.config.apiKey,
                     Authorization: `Bearer ${this.token}`,
                 },
                 data,
@@ -177,14 +177,27 @@ class Chargeamps extends utils.Adapter {
     async chargeampsLogin(email, password, apiKey) {
         try {
             this.log.debug('Logging in to Charge Amps');
+
+            // Request-Daten
             const data = { email, password };
+
+            // API-Request
             const response = await this.apiRequest('https://eapi.charge.space/api/v5/auth/login', 'POST', data);
-            this.token = response.token;
-            this.logged_in = true;
-            await this.chargeampsGetOwnedChargepoints();
-            return true;
+
+            // Überprüfe, ob das Token vorhanden ist
+            if (response && response.token) {
+                this.token = response.token;
+                this.logged_in = true;
+                this.log.info('Login successful');
+                await this.chargeampsGetOwnedChargepoints();
+                return true;
+            } else {
+                this.log.error('Login failed: No token received');
+                this.logged_in = false;
+                return false;
+            }
         } catch (error) {
-            this.log.error('Login failed');
+            this.log.error(`Login failed: ${error.message}`);
             this.logged_in = false;
             return false;
         }
@@ -309,6 +322,7 @@ class Chargeamps extends utils.Adapter {
         try {
             for (const [subKey, value] of Object.entries(obj)) {
                 const fullKey = `${key}.${subKey}`;
+                // @ts-ignore
                 await this.setObjectNotExistsAsync(fullKey, {
                     type: 'state',
                     common: {
@@ -426,7 +440,6 @@ class Chargeamps extends utils.Adapter {
     }
 }
 
-// @ts-ignore
 if (require.main !== module) {
     module.exports = (options) => new Chargeamps(options);
 } else {
