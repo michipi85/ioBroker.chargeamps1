@@ -1,3 +1,5 @@
+// @ts-check
+
 // Don't silently swallow unhandled rejections
 process.on('unhandledRejection', (e) => {
     throw e;
@@ -5,10 +7,13 @@ process.on('unhandledRejection', (e) => {
 
 // enable the should interface with sinon
 // and load chai-as-promised and sinon-chai by default
-const sinonChai = require('sinon-chai');
-const chaiAsPromised = require('chai-as-promised');
-const { should, use } = require('chai');
+import sinonChai from 'sinon-chai';
+import chaiAsPromised from 'chai-as-promised';
+import { should, use } from 'chai';
 
 should();
-use(sinonChai);
+
+/** @type {Chai.ChaiPlugin} */
+const sinonChaiPlugin = sinonChai;
+use(sinonChaiPlugin);
 use(chaiAsPromised);

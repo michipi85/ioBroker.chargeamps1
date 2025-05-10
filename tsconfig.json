@@ -25,6 +25,8 @@
         // "noUnusedParameters": true,
         "useUnknownInCatchVariables": false,
 
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true
     },
     "include": [
         "**/*.js",
