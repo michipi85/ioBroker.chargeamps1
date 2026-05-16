@@ -73,25 +73,42 @@
         },
         "dependencies": [
             {
-                "js-controller": ">=6.0.11",
-                "axios": "^1.5.0"
+                "js-controller": ">=5.0.0"
             }
         ],
         "globalDependencies": [
             {
-                "admin": "7.0.23"
+                "admin": ">=6.0.0"
             }
         ]
     },
-    "encryptedNative": ["password"],
-    "protectedNative": ["password"],
+    "encryptedNative": ["password","apiKey"],
+    "protectedNative": ["password","apiKey"],
     "native": {
 		"email": "",
 		"password": "",
 		"apiKey": "",
-		"Interval": 30
+	    "apiBaseUrl": "https://eapi.charge.space",
+        "pollInterval": 60,
+        "rfid": "",
+        "rfidFormat": "Hex",
+        "rfidLength": 8
     },
-    "objects": [],
+    "objects": [
+    {
+     "_id": "info.connection",
+     "type": "state",
+     "common": {
+        "name": "Connected",
+        "type": "boolean",
+        "role": "indicator.connected",
+        "read": true,
+        "write": false,
+        "def": false
+      },
+    "native": {}
+      }
+    ],
     "instanceObjects": []
 
 }
