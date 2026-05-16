@@ -1,4 +1,5 @@
 ![Logo](admin/chargeamps.png)
+
 ioBroker.chargeamps1
 ioBroker adapter for Charge Amps Halo wallboxes via the Charge Amps External REST API.
 

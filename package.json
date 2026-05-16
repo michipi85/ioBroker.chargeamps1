@@ -38,10 +38,11 @@
     "README.md"
   ],
   "scripts": {
-    "prebuild": "node -e \"require('fs').rmSync('build', { recursive: true, force: true }); require('fs').rmSync('build-test', { recursive: true, force: true })\"",
+    "prebuild": "node -e \"require('fs').rmSync('build', { recursive: true, force: true })\"",
     "build": "tsc -p tsconfig.json",
     "watch": "tsc -w -p tsconfig.json",
-    "test": "npm run build && node --test build/test/chargeamps-api.test.js",
+    "pretest": "node -e \"require('fs').rmSync('build-test', { recursive: true, force: true })\"",
+    "test": "npm run build && node --test build-test/chargeamps-api.test.js",
     "prepack": "npm run build"
   },
   "bugs": {
