@@ -1,13 +1,12 @@
 {
-  "Account settings": {
-    "type": "header",
-    "text": "Account settings",
-    "size": 2,
-    "newLine": true
-  },
-
   "type": "panel",
   "items": {
+    "Account settings": {
+     "type": "header",
+     "text": "Account settings",
+     "size": 2,
+     "newLine": true
+    },
     "email": {
       "type": "text",
       "label": "Charge Amps email",
