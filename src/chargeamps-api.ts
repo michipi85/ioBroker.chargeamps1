@@ -60,16 +60,6 @@ export interface StartAuth {
   externalTransactionId: string;
 }
 
-export interface ChargingSession {
-  id: number;
-  chargePointId: string;
-  connectorId: number;
-  sessionType: string;
-  totalConsumptionKwh: number;
-  startTime?: string | null;
-  endTime?: string | null;
-}
-
 export interface ChargeAmpsApiOptions {
   email: string;
   password: string;
@@ -151,26 +141,6 @@ export class ChargeAmpsApi {
       {
         method: "PUT",
         body: JSON.stringify(startAuth),
-      },
-    );
-  }
-
-  public async start(chargePointId: string, connectorId: number): Promise<ChargingSession> {
-    return this.request<ChargingSession>(
-      `/api/v5/chargepoints/${encodeURIComponent(chargePointId)}/connectors/${connectorId}/start`,
-      {
-        method: "POST",
-        body: JSON.stringify({}),
-      },
-    );
-  }
-
-  public async stop(chargePointId: string, connectorId: number): Promise<ChargingSession> {
-    return this.request<ChargingSession>(
-      `/api/v5/chargepoints/${encodeURIComponent(chargePointId)}/connectors/${connectorId}/stop`,
-      {
-        method: "POST",
-        body: JSON.stringify({}),
       },
     );
   }

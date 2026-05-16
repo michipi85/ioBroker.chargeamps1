@@ -56,18 +56,6 @@ class ChargeAmpsApi {
             body: JSON.stringify(startAuth),
         });
     }
-    async start(chargePointId, connectorId) {
-        return this.request(`/api/v5/chargepoints/${encodeURIComponent(chargePointId)}/connectors/${connectorId}/start`, {
-            method: "POST",
-            body: JSON.stringify({}),
-        });
-    }
-    async stop(chargePointId, connectorId) {
-        return this.request(`/api/v5/chargepoints/${encodeURIComponent(chargePointId)}/connectors/${connectorId}/stop`, {
-            method: "POST",
-            body: JSON.stringify({}),
-        });
-    }
     async remoteStop(chargePointId, connectorId) {
         await this.request(`/api/v5/chargepoints/${encodeURIComponent(chargePointId)}/connectors/${connectorId}/remotestop`, {
             method: "PUT",

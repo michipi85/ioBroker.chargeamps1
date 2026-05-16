@@ -1,9 +1,9 @@
 import * as utils from "@iobroker/adapter-core";
 import {
   ChargeAmpsApi,
+  ChargeAmpsApiError,
   ChargePoint,
   ChargePointSettings,
-  ChargingSession,
   ConnectorSettings,
   Measurement,
 } from "./chargeamps-api";
@@ -90,7 +90,7 @@ class ChargeampsHalo extends utils.Adapter {
       await this.setState("info.connection", true, true);
     } catch (error) {
       await this.setState("info.connection", false, true);
-      this.log.warn(`Charge Amps polling failed: ${error instanceof Error ? error.message : String(error)}`);
+      this.log.warn(`Charge Amps polling failed: ${formatError(error)}`);
     } finally {
       this.polling = false;
       this.schedulePoll();
@@ -306,42 +306,6 @@ class ChargeampsHalo extends utils.Adapter {
       await this.ensureState(`${base}.status.startTime`, "Start time", "string", "date", undefined, false);
       await this.ensureState(`${base}.status.endTime`, "End time", "string", "date", undefined, false);
 
-      await this.extendObjectAsync(`${base}.lastStartSession`, {
-        type: "channel",
-        common: { name: "Last start session" },
-        native: {},
-      });
-      await this.ensureState(`${base}.lastStartSession.id`, "Session ID", "number", "value", undefined, false);
-      await this.ensureState(`${base}.lastStartSession.type`, "Session type", "string", "value", undefined, false);
-      await this.ensureState(
-        `${base}.lastStartSession.totalConsumptionKwh`,
-        "Total consumption",
-        "number",
-        "value.power.consumption",
-        "kWh",
-        false,
-      );
-      await this.ensureState(`${base}.lastStartSession.startTime`, "Start time", "string", "date", undefined, false);
-      await this.ensureState(`${base}.lastStartSession.endTime`, "End time", "string", "date", undefined, false);
-
-      await this.extendObjectAsync(`${base}.lastStopSession`, {
-        type: "channel",
-        common: { name: "Last stop session" },
-        native: {},
-      });
-      await this.ensureState(`${base}.lastStopSession.id`, "Session ID", "number", "value", undefined, false);
-      await this.ensureState(`${base}.lastStopSession.type`, "Session type", "string", "value", undefined, false);
-      await this.ensureState(
-        `${base}.lastStopSession.totalConsumptionKwh`,
-        "Total consumption",
-        "number",
-        "value.power.consumption",
-        "kWh",
-        false,
-      );
-      await this.ensureState(`${base}.lastStopSession.startTime`, "Start time", "string", "date", undefined, false);
-      await this.ensureState(`${base}.lastStopSession.endTime`, "End time", "string", "date", undefined, false);
-
       await this.extendObjectAsync(`${base}.settings`, {
         type: "channel",
         common: { name: "Settings" },
@@ -357,10 +321,18 @@ class ChargeampsHalo extends utils.Adapter {
         common: { name: "Commands" },
         native: {},
       });
-      await this.ensureState(`${base}.commands.start`, "Start", "boolean", "button", undefined, true);
-      await this.ensureState(`${base}.commands.stop`, "Stop", "boolean", "button", undefined, true);
       await this.ensureState(`${base}.commands.remoteStart`, "Remote start", "boolean", "button", undefined, true);
       await this.ensureState(`${base}.commands.remoteStop`, "Remote stop", "boolean", "button", undefined, true);
+      await this.ensureState(`${base}.commands.enableCharging`, "Enable charging", "boolean", "button", undefined, true);
+      await this.ensureState(
+        `${base}.commands.disableCharging`,
+        "Disable charging",
+        "boolean",
+        "button",
+        undefined,
+        true,
+      );
+      await this.ensureState(`${base}.commands.useSchedule`, "Use schedule", "boolean", "button", undefined, true);
     }
   }
 
@@ -402,17 +374,20 @@ class ChargeampsHalo extends utils.Adapter {
       if (relativeId.endsWith(".commands.reboot") && state.val === true) {
         await this.handleReboot(relativeId);
         resetCommand = true;
-      } else if (relativeId.endsWith(".commands.start") && state.val === true) {
-        await this.handleStart(relativeId);
-        resetCommand = true;
-      } else if (relativeId.endsWith(".commands.stop") && state.val === true) {
-        await this.handleStop(relativeId);
-        resetCommand = true;
       } else if (relativeId.endsWith(".commands.remoteStart") && state.val === true) {
         await this.handleRemoteStart(relativeId);
         resetCommand = true;
       } else if (relativeId.endsWith(".commands.remoteStop") && state.val === true) {
         await this.handleRemoteStop(relativeId);
+        resetCommand = true;
+      } else if (relativeId.endsWith(".commands.enableCharging") && state.val === true) {
+        await this.handleConnectorModeCommand(relativeId, "On");
+        resetCommand = true;
+      } else if (relativeId.endsWith(".commands.disableCharging") && state.val === true) {
+        await this.handleConnectorModeCommand(relativeId, "Off");
+        resetCommand = true;
+      } else if (relativeId.endsWith(".commands.useSchedule") && state.val === true) {
+        await this.handleConnectorModeCommand(relativeId, "Schedule");
         resetCommand = true;
       } else if (relativeId.includes(".settings.")) {
         await this.handleSetting(relativeId, state.val);
@@ -420,7 +395,7 @@ class ChargeampsHalo extends utils.Adapter {
       await this.setStateAsync(relativeId, resetCommand ? false : state.val, true);
       await this.poll();
     } catch (error) {
-      this.log.warn(`Command ${relativeId} failed: ${error instanceof Error ? error.message : String(error)}`);
+      this.log.warn(`Command ${relativeId} failed: ${formatError(error)}`);
     }
   }
 
@@ -432,28 +407,24 @@ class ChargeampsHalo extends utils.Adapter {
     }
   }
 
-  private async handleStart(relativeId: string): Promise<void> {
+  private async handleConnectorModeCommand(relativeId: string, mode: string): Promise<void> {
     const ref = this.resolveConnector(relativeId);
     if (!ref) {
       return;
     }
 
-    const session = await this.api?.start(ref.chargePointId, ref.connectorId);
-    if (session) {
-      await this.updateSession(relativeId, "lastStartSession", session);
-    }
-  }
-
-  private async handleStop(relativeId: string): Promise<void> {
-    const ref = this.resolveConnector(relativeId);
-    if (!ref) {
+    const key = connectorKey(ref.chargePointId, ref.connectorId);
+    const settings = this.connectorSettings.get(key);
+    if (!settings) {
       return;
     }
 
-    const session = await this.api?.stop(ref.chargePointId, ref.connectorId);
-    if (session) {
-      await this.updateSession(relativeId, "lastStopSession", session);
-    }
+    const changed = { ...settings, mode };
+    await this.api?.setConnectorSettings(changed);
+    this.connectorSettings.set(key, changed);
+
+    const parts = relativeId.split(".");
+    await this.setStateChangedAsync(`chargepoints.${parts[1]}.connectors.${parts[3]}.settings.mode`, mode, true);
   }
 
   private async handleRemoteStart(relativeId: string): Promise<void> {
@@ -480,16 +451,6 @@ class ChargeampsHalo extends utils.Adapter {
     if (ref) {
       await this.api?.remoteStop(ref.chargePointId, ref.connectorId);
     }
-  }
-
-  private async updateSession(relativeId: string, channel: "lastStartSession" | "lastStopSession", session: ChargingSession): Promise<void> {
-    const parts = relativeId.split(".");
-    const base = `chargepoints.${parts[1]}.connectors.${parts[3]}.${channel}`;
-    await this.setStateChangedAsync(`${base}.id`, session.id, true);
-    await this.setStateChangedAsync(`${base}.type`, session.sessionType, true);
-    await this.setStateChangedAsync(`${base}.totalConsumptionKwh`, session.totalConsumptionKwh, true);
-    await this.setStateChangedAsync(`${base}.startTime`, session.startTime ?? "", true);
-    await this.setStateChangedAsync(`${base}.endTime`, session.endTime ?? "", true);
   }
 
   private async handleSetting(relativeId: string, value: ioBroker.StateValue): Promise<void> {
@@ -561,6 +522,14 @@ function objectId(value: string): string {
 
 function connectorKey(chargePointId: string, connectorId: number): string {
   return `${chargePointId}:${connectorId}`;
+}
+
+function formatError(error: unknown): string {
+  if (error instanceof ChargeAmpsApiError) {
+    const body = error.body ? `: ${error.body.slice(0, 500)}` : "";
+    return `${error.message}${body}`;
+  }
+  return error instanceof Error ? error.message : String(error);
 }
 
 if (require.main !== module) {
