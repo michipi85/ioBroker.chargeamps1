@@ -1,6 +1,6 @@
 {
   "name": "iobroker.chargeamps1",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "controll ChargeAmps Wallbox API",
   "author": {
     "name": "michipi85",
@@ -24,14 +24,21 @@
     "@iobroker/adapter-core": "^3.3.2"
   },
   "devDependencies": {
-    "@iobroker/types": "^7.0.0",
+    "@iobroker/types": "^7.1.2",
     "@types/node": "^20.19.0",
     "typescript": "^5.8.3"
   },
-  "main": "build/src/main.js",
-  "types": "build/src/main.d.ts",
- 
+  "main": "build/main.js",
+  "types": "build/main.d.ts",
+   "files": [
+    "admin",
+    "build",
+    "io-package.json",
+    "LICENSE",
+    "README.md"
+  ],
   "scripts": {
+    "prebuild": "node -e \"require('fs').rmSync('build', { recursive: true, force: true }); require('fs').rmSync('build-test', { recursive: true, force: true })\"",
     "build": "tsc -p tsconfig.json",
     "watch": "tsc -w -p tsconfig.json",
     "test": "npm run build && node --test build/test/chargeamps-api.test.js",

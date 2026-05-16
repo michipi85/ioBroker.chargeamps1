@@ -7,7 +7,7 @@
       "ES2022",
       "DOM"
     ],
-    "rootDir": ".",
+    "rootDir": "src",
     "outDir": "build",
     "strict": true,
     "esModuleInterop": true,
@@ -17,7 +17,6 @@
     "sourceMap": true
   },
   "include": [
-    "src/**/*.ts",
-    "test/**/*.ts"
+    "src/**/*.ts"
   ]
 }
