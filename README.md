@@ -6,13 +6,13 @@
 This adapter uses the official Charge Amps External API at https://eapi.charge.space. You need a Charge Amps account and an External API key. Charge Amps documents the API at https://eapi.charge.space/swagger/index.html; according to the public Python reference client, the current API version used here is v5.
 
 ## Features
-Login with email, password and External API key
-Poll owned charge points and connector status
-Expose current, voltage, total consumption, session and wallbox metadata
-Change wallbox settings: dimmer and down light
-Change connector settings: mode, RFID lock, cable lock and maximum current
-Commands for remote start, remote stop and reboot
-Convenience commands for connector mode: switch wallbox on, set wallbox to standby and use schedule
+Login with email, password and External API key.
+Poll owned charge points and connector status.
+Expose current, voltage, total consumption, session and wallbox metadata.
+Change wallbox settings: dimmer and down light.
+Change connector settings: mode, RFID lock, cable lock and maximum current.
+Commands for remote start, remote stop and reboot.
+Convenience commands for connector mode: switch wallbox on, set wallbox to standby and use schedule.
 
 ## Configuration
 Create an instance of the adapter and configure:
@@ -33,7 +33,8 @@ chargeamps1.0.chargepoints.<chargePointId>
 Connector states are placed below:
 
 chargepoints.<chargePointId>.connectors.<connectorId>
-Writable command states:
+
+**Writable command states:**
 
 commands.reboot
 connectors.<connectorId>.commands.remoteStart
@@ -49,7 +50,7 @@ disableCharging sets mode to Off and puts the wallbox/connector into standby.
 useSchedule sets mode to Schedule.
 
 
-### Writable setting states:
+**Writable setting states:**
 
 settings.dimmer
 settings.downLight
