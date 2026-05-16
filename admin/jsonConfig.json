@@ -1,26 +1,112 @@
 {
-    "i18n": true,
-    "type": "panel",
-    "items": {
-		"email": {
-			"type": "text",
-			"label": "E-Mail",
-			"newLine": true
-		},
-		"password": {
-			"type": "text",
-			"label": "Password",
-			"newLine": true
-		},
-		"apiKey": {
-			"type": "text",
-			"label": "API-Key",
-			"newLine": true
-		},
-		"Interval": {
-			"type": "text",
-			"label": "Refresh Interval",
-			"newLine": true
+  "type": "panel",
+  "items": {
+    "Account settings": {
+     "type": "header",
+     "text": "Account settings",
+     "size": 2,
+     "newLine": true
+    },
+    "email": {
+      "type": "text",
+      "label": "Charge Amps email",
+      "newLine": true,
+      "xs": 12,
+      "sm": 12,
+      "md": 8,
+      "lg": 3,
+      "xl": 3
+    },
+    "password": {
+      "type": "password",
+      "label": "Charge Amps password",
+      "newLine": true,
+      "xs": 12,
+      "sm": 12,
+      "md": 8,
+      "lg": 3,
+      "xl": 3
+    },
+    "apiKey": {
+      "type": "password",
+      "label": "External API key",
+      "xs": 12,
+      "sm": 12,
+      "md": 8,
+      "lg": 3,
+      "xl": 3
+    },
+
+    "Api settings": {
+      "type": "header",
+      "text": "Api settings",
+      "size": 2,
+      "newLine": true
+    },
+
+    "apiBaseUrl": {
+      "type": "text",
+      "label": "API base URL",
+      "newLine": true,
+      "xs": 12,
+      "sm": 12,
+      "md": 8,
+      "lg": 3,
+      "xl": 3
+    },
+    "pollInterval": {
+      "type": "number",
+      "label": "Poll interval in seconds",
+      "min": 30,
+      "xs": 12,
+      "sm": 12,
+      "md": 8,
+      "lg": 3,
+      "xl": 3
+    },
+
+    "RFID settings": {
+      "type": "header",
+      "text": "RFID settings (for remote start)",
+      "size": 2,
+      "newLine": true
+    },
+
+    "rfid": {
+      "type": "text",
+      "label": "RFID for remote start",
+      "newLine": true
+    },
+    "rfidFormat": {
+      "type": "select",
+      "label": "RFID format",
+      "options": [
+        {
+          "label": "Hex",
+          "value": "Hex"
+        },
+        {
+          "label": "Decimal",
+          "value": "Decimal"
         }
+      ],
+      "newLine": true,
+      "xs": 12,
+      "sm": 12,
+      "md": 8,
+      "lg": 4,
+      "xl": 4
+    },
+    "rfidLength": {
+      "type": "number",
+      "label": "RFID length (HEX: bytes, Decimal: digits)",
+      "help": "For HEX values, enter the byte length, e.g. 4 for an 8-character HEX RFID. Leave 0 to calculate automatically.",
+      "min": 0,
+      "xs": 12,
+      "sm": 12,
+      "md": 8,
+      "lg": 4,
+      "xl": 4
     }
+  }
 }
