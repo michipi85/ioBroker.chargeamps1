@@ -1,15 +1,15 @@
 {
-  "name": "iobroker.chargeamps",
-  "version": "0.0.2",
+  "name": "iobroker.chargeamps1",
+  "version": "0.1.0",
   "description": "controll ChargeAmps Wallbox API",
   "author": {
     "name": "michipi85",
     "email": "sammer.michael.ms@gmail.com"
   },
-  "homepage": "https://github.com/michipi85/ioBroker.chargeamps",
+  "homepage": "https://github.com/michipi85/ioBroker.chargeamps1",
   "repository": {
     "type": "git",
-    "url": "https://github.com/michipi85/ioBroker.chargeamps.git"
+    "url": "https://github.com/michipi85/ioBroker.chargeamps1.git"
   },
   "license": "MIT",
   "keywords": [
@@ -38,7 +38,7 @@
     "prepack": "npm run build"
   },
   "bugs": {
-    "url": "https://github.com/michipi85/ioBroker.chargeamps/issues"
+    "url": "https://github.com/michipi85/ioBroker.chargeamps1/issues"
   },
   "readmeFilename": "README.md"
 }

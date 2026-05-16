@@ -1,5 +1,5 @@
 ![Logo](admin/chargeamps.png)
-ioBroker.chargeamps-halo
+ioBroker.chargeamps1
 ioBroker adapter for Charge Amps Halo wallboxes via the Charge Amps External REST API.
 
 This adapter uses the official Charge Amps External API at https://eapi.charge.space. You need a Charge Amps account and an External API key. Charge Amps documents the API at https://eapi.charge.space/swagger/index.html; according to the public Python reference client, the current API version used here is v5.
