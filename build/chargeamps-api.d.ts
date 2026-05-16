@@ -52,6 +52,15 @@ export interface StartAuth {
     rfid: string;
     externalTransactionId: string;
 }
+export interface ChargingSession {
+    id: number;
+    chargePointId: string;
+    connectorId: number;
+    sessionType: string;
+    totalConsumptionKwh: number;
+    startTime?: string | null;
+    endTime?: string | null;
+}
 export interface ChargeAmpsApiOptions {
     email: string;
     password: string;
@@ -81,6 +90,8 @@ export declare class ChargeAmpsApi {
     getConnectorSettings(chargePointId: string, connectorId: number): Promise<ConnectorSettings>;
     setConnectorSettings(settings: ConnectorSettings): Promise<void>;
     remoteStart(chargePointId: string, connectorId: number, startAuth: StartAuth): Promise<void>;
+    start(chargePointId: string, connectorId: number): Promise<ChargingSession>;
+    stop(chargePointId: string, connectorId: number): Promise<ChargingSession>;
     remoteStop(chargePointId: string, connectorId: number): Promise<void>;
     reboot(chargePointId: string): Promise<void>;
     private ensureToken;

@@ -11,7 +11,7 @@ Poll owned charge points and connector status
 Expose current, voltage, total consumption, session and wallbox metadata
 Change wallbox settings: dimmer and down light
 Change connector settings: mode, RFID lock, cable lock and maximum current
-Commands for remote start, remote stop and reboot
+Commands for start, stop, remote start, remote stop and reboot
 Configuration
 Create an instance of the adapter and configure:
 
@@ -33,6 +33,8 @@ Writable command states:
 
 commands.reboot
 connectors.<connectorId>.commands.remoteStart
+connectors.<connectorId>.commands.start
+connectors.<connectorId>.commands.stop
 connectors.<connectorId>.commands.remoteStop
 Writable setting states:
 

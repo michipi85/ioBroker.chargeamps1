@@ -246,6 +246,26 @@ class ChargeampsHalo extends utils.Adapter {
             await this.ensureState(`${base}.status.sessionId`, "Session ID", "number", "value", undefined, false);
             await this.ensureState(`${base}.status.startTime`, "Start time", "string", "date", undefined, false);
             await this.ensureState(`${base}.status.endTime`, "End time", "string", "date", undefined, false);
+            await this.extendObjectAsync(`${base}.lastStartSession`, {
+                type: "channel",
+                common: { name: "Last start session" },
+                native: {},
+            });
+            await this.ensureState(`${base}.lastStartSession.id`, "Session ID", "number", "value", undefined, false);
+            await this.ensureState(`${base}.lastStartSession.type`, "Session type", "string", "value", undefined, false);
+            await this.ensureState(`${base}.lastStartSession.totalConsumptionKwh`, "Total consumption", "number", "value.power.consumption", "kWh", false);
+            await this.ensureState(`${base}.lastStartSession.startTime`, "Start time", "string", "date", undefined, false);
+            await this.ensureState(`${base}.lastStartSession.endTime`, "End time", "string", "date", undefined, false);
+            await this.extendObjectAsync(`${base}.lastStopSession`, {
+                type: "channel",
+                common: { name: "Last stop session" },
+                native: {},
+            });
+            await this.ensureState(`${base}.lastStopSession.id`, "Session ID", "number", "value", undefined, false);
+            await this.ensureState(`${base}.lastStopSession.type`, "Session type", "string", "value", undefined, false);
+            await this.ensureState(`${base}.lastStopSession.totalConsumptionKwh`, "Total consumption", "number", "value.power.consumption", "kWh", false);
+            await this.ensureState(`${base}.lastStopSession.startTime`, "Start time", "string", "date", undefined, false);
+            await this.ensureState(`${base}.lastStopSession.endTime`, "End time", "string", "date", undefined, false);
             await this.extendObjectAsync(`${base}.settings`, {
                 type: "channel",
                 common: { name: "Settings" },
@@ -260,6 +280,8 @@ class ChargeampsHalo extends utils.Adapter {
                 common: { name: "Commands" },
                 native: {},
             });
+            await this.ensureState(`${base}.commands.start`, "Start", "boolean", "button", undefined, true);
+            await this.ensureState(`${base}.commands.stop`, "Stop", "boolean", "button", undefined, true);
             await this.ensureState(`${base}.commands.remoteStart`, "Remote start", "boolean", "button", undefined, true);
             await this.ensureState(`${base}.commands.remoteStop`, "Remote stop", "boolean", "button", undefined, true);
         }
@@ -293,6 +315,14 @@ class ChargeampsHalo extends utils.Adapter {
                 await this.handleReboot(relativeId);
                 resetCommand = true;
             }
+            else if (relativeId.endsWith(".commands.start") && state.val === true) {
+                await this.handleStart(relativeId);
+                resetCommand = true;
+            }
+            else if (relativeId.endsWith(".commands.stop") && state.val === true) {
+                await this.handleStop(relativeId);
+                resetCommand = true;
+            }
             else if (relativeId.endsWith(".commands.remoteStart") && state.val === true) {
                 await this.handleRemoteStart(relativeId);
                 resetCommand = true;
@@ -318,6 +348,26 @@ class ChargeampsHalo extends utils.Adapter {
             await this.api?.reboot(chargePointId);
         }
     }
+    async handleStart(relativeId) {
+        const ref = this.resolveConnector(relativeId);
+        if (!ref) {
+            return;
+        }
+        const session = await this.api?.start(ref.chargePointId, ref.connectorId);
+        if (session) {
+            await this.updateSession(relativeId, "lastStartSession", session);
+        }
+    }
+    async handleStop(relativeId) {
+        const ref = this.resolveConnector(relativeId);
+        if (!ref) {
+            return;
+        }
+        const session = await this.api?.stop(ref.chargePointId, ref.connectorId);
+        if (session) {
+            await this.updateSession(relativeId, "lastStopSession", session);
+        }
+    }
     async handleRemoteStart(relativeId) {
         const ref = this.resolveConnector(relativeId);
         if (!ref) {
@@ -339,6 +389,15 @@ class ChargeampsHalo extends utils.Adapter {
         if (ref) {
             await this.api?.remoteStop(ref.chargePointId, ref.connectorId);
         }
+    }
+    async updateSession(relativeId, channel, session) {
+        const parts = relativeId.split(".");
+        const base = `chargepoints.${parts[1]}.connectors.${parts[3]}.${channel}`;
+        await this.setStateChangedAsync(`${base}.id`, session.id, true);
+        await this.setStateChangedAsync(`${base}.type`, session.sessionType, true);
+        await this.setStateChangedAsync(`${base}.totalConsumptionKwh`, session.totalConsumptionKwh, true);
+        await this.setStateChangedAsync(`${base}.startTime`, session.startTime ?? "", true);
+        await this.setStateChangedAsync(`${base}.endTime`, session.endTime ?? "", true);
     }
     async handleSetting(relativeId, value) {
         const parts = relativeId.split(".");

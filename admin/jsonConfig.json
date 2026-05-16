@@ -67,7 +67,7 @@
 
     "RFID settings": {
       "type": "header",
-      "text": "RFID settings",
+      "text": "RFID settings (for remote start)",
       "size": 2,
       "newLine": true
     },
