@@ -1,9 +1,9 @@
 {
     "common": {
         "name": "chargeamps1",
-        "version": "0.1.1",
+        "version": "0.1.5",
         "news": {
-            "0.1.1": {
+            "0.1.5": {
                 "en": "initial release",
                 "de": "Erstveröffentlichung",
                 "ru": "Начальная версия",
