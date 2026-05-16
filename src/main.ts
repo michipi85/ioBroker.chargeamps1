@@ -24,7 +24,7 @@ class ChargeampsHalo extends utils.Adapter {
   public constructor(options: Partial<utils.AdapterOptions> = {}) {
     super({
       ...options,
-      name: "chargeamps-halo",
+      name: "chargeamps1",
     });
 
     this.on("ready", this.onReady.bind(this));
@@ -33,6 +33,7 @@ class ChargeampsHalo extends utils.Adapter {
   }
 
   private async onReady(): Promise<void> {
+    await this.ensureBaseObjects();
     await this.setState("info.connection", false, true);
 
     if (!this.config.email || !this.config.password || !this.config.apiKey) {
@@ -169,6 +170,12 @@ class ChargeampsHalo extends utils.Adapter {
   }
 
   private async updateMeasurements(base: string, measurements: Measurement[]): Promise<void> {
+    await this.extendObjectAsync(base, {
+      type: "channel",
+      common: { name: "Measurements" },
+      native: {},
+    });
+
     for (const measurement of measurements) {
       const phase = objectId(measurement.phase);
       await this.extendObjectAsync(`${base}.${phase}`, {
@@ -181,6 +188,20 @@ class ChargeampsHalo extends utils.Adapter {
       await this.setStateChangedAsync(`${base}.${phase}.current`, measurement.current, true);
       await this.setStateChangedAsync(`${base}.${phase}.voltage`, measurement.voltage, true);
     }
+  }
+
+  private async ensureBaseObjects(): Promise<void> {
+    await this.extendObjectAsync("info", {
+      type: "channel",
+      common: { name: "Information" },
+      native: {},
+    });
+    await this.ensureState("info.connection", "Connected", "boolean", "indicator.connected", undefined, false);
+    await this.extendObjectAsync("chargepoints", {
+      type: "channel",
+      common: { name: "Charge points" },
+      native: {},
+    });
   }
 
   private async ensureChargePointObjects(chargePoint: ChargePoint): Promise<void> {
@@ -244,6 +265,12 @@ class ChargeampsHalo extends utils.Adapter {
       native: {},
     });
     await this.ensureState(`chargepoints.${cpId}.commands.reboot`, "Reboot", "boolean", "button", undefined, true);
+
+    await this.extendObjectAsync(`chargepoints.${cpId}.connectors`, {
+      type: "channel",
+      common: { name: "Connectors" },
+      native: {},
+    });
 
     for (const connector of chargePoint.connectors) {
       const connectorId = objectId(String(connector.connectorId));
@@ -341,7 +368,7 @@ class ChargeampsHalo extends utils.Adapter {
       } else if (relativeId.includes(".settings.")) {
         await this.handleSetting(relativeId, state.val);
       }
-      await this.setState(id, state.val, true);
+      await this.setStateAsync(relativeId, state.val, true);
       await this.poll();
     } catch (error) {
       this.log.warn(`Command ${relativeId} failed: ${error instanceof Error ? error.message : String(error)}`);

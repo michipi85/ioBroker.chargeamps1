@@ -25,7 +25,7 @@ The password and API key are marked as encrypted/protected native settings in io
 State Structure
 The adapter creates states under:
 
-chargeamps-halo.0.chargepoints.<chargePointId>
+chargeamps1.0.chargepoints.<chargePointId>
 Connector states are placed below:
 
 chargepoints.<chargePointId>.connectors.<connectorId>
