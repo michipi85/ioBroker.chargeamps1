@@ -54,9 +54,9 @@ export interface ConnectorSettings {
 }
 
 export interface StartAuth {
-  rfidLength: number;
-  rfidFormat: string;
-  rfid: string;
+  rfidLength?: number;
+  rfidFormat?: string;
+  rfid?: string;
   externalTransactionId: string;
 }
 

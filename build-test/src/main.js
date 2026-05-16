@@ -323,16 +323,17 @@ class ChargeampsHalo extends utils.Adapter {
         if (!ref) {
             return;
         }
-        if (!this.config.rfid) {
-            this.log.warn("Remote start requires an RFID in the adapter configuration.");
-            return;
-        }
-        await this.api?.remoteStart(ref.chargePointId, ref.connectorId, {
-            rfid: this.config.rfid,
-            rfidFormat: this.config.rfidFormat || "Hex",
-            rfidLength: Number(this.config.rfidLength) || this.config.rfid.length,
+        const startAuth = {
             externalTransactionId: `iobroker-${Date.now()}`,
-        });
+        };
+        if (this.config.rfid) {
+            Object.assign(startAuth, {
+                rfid: this.config.rfid,
+                rfidFormat: this.config.rfidFormat || "Hex",
+                rfidLength: Number(this.config.rfidLength) || this.config.rfid.length,
+            });
+        }
+        await this.api?.remoteStart(ref.chargePointId, ref.connectorId, startAuth);
     }
     async handleRemoteStop(relativeId) {
         const ref = this.resolveConnector(relativeId);
