@@ -1,76 +1,52 @@
 {
-  "name": "iobroker.chargeamps",
-  "version": "0.0.2",
+  "name": "iobroker.chargeamps1",
+  "version": "0.1.5",
   "description": "controll ChargeAmps Wallbox API",
   "author": {
     "name": "michipi85",
     "email": "sammer.michael.ms@gmail.com"
   },
-  "homepage": "https://github.com/michipi85/ioBroker.chargeamps",
+  "homepage": "https://github.com/michipi85/ioBroker.chargeamps1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/michipi85/ioBroker.chargeamps1.git"
+  },
   "license": "MIT",
   "keywords": [
     "charge amps",
     "wallbox",
     "halo"
   ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/michipi85/ioBroker.chargeamps.git"
-  },
   "engines": {
-    "node": ">= 20"
+    "node": ">= 18"
   },
   "dependencies": {
-    "@iobroker/adapter-core": "^3.2.3",
-    "axios": "^1.5.0",
-    "node-fetch": "^3.3.2"
+    "@iobroker/adapter-core": "^3.3.2"
   },
   "devDependencies": {
-    "@alcalzone/release-script": "^3.8.0",
-    "@alcalzone/release-script-plugin-iobroker": "^3.7.2",
-    "@alcalzone/release-script-plugin-license": "^3.7.0",
-    "@alcalzone/release-script-plugin-manual-review": "^3.7.0",
-    "@iobroker/adapter-dev": "^1.4.0",
-    "@iobroker/testing": "^5.0.3",
-    "@tsconfig/node20": "^20.1.6",
-    "@types/chai": "^5.2.2",
-    "@types/chai-as-promised": "^8.0.2",
-    "@types/mocha": "^10.0.10",
-    "@types/node": "^20.17.23",
-    "@types/proxyquire": "^1.3.31",
-    "@types/sinon": "^17.0.4",
-    "@types/sinon-chai": "^4.0.0",
-    "chai": "^5.2.0",
-    "chai-as-promised": "^8.0.1",
-    "eslint": "^8.57.1",
-    "mocha": "^11.2.2",
-    "proxyquire": "^2.1.3",
-    "sinon": "^20.0.0",
-    "sinon-chai": "^4.0.0",
-    "typescript": "~5.8.3"
+    "@iobroker/types": "^7.1.2",
+    "@types/node": "^20.19.0",
+    "typescript": "^5.8.3"
   },
-  "main": "main.js",
-  "files": [
-    "admin{,/!(src)/**}/!(tsconfig|tsconfig.*|.eslintrc).{json,json5}",
-    "admin{,/!(src)/**}/*.{html,css,png,svg,jpg,js}",
-    "lib/",
-    "www/",
+  "main": "build/main.js",
+  "types": "build/main.d.ts",
+   "files": [
+    "admin",
+    "build",
     "io-package.json",
     "LICENSE",
-    "main.js"
+    "README.md"
   ],
   "scripts": {
-    "test:js": "mocha --config test/mocharc.custom.json \"{!(node_modules|test)/**/*.test.js,*.test.js,test/**/test!(PackageFiles|Startup).js}\"",
-    "test:package": "mocha test/package --exit",
-    "test:integration": "mocha test/integration --exit",
-    "test": "npm run test:js && npm run test:package",
-    "check": "tsc --noEmit -p tsconfig.check.json",
-    "lint": "eslint .",
-    "translate": "translate-adapter",
-    "release": "release-script"
+    "prebuild": "node -e \"require('fs').rmSync('build', { recursive: true, force: true })\"",
+    "build": "tsc -p tsconfig.json",
+    "watch": "tsc -w -p tsconfig.json",
+    "pretest": "node -e \"require('fs').rmSync('build-test', { recursive: true, force: true })\"",
+    "test": "npm run build && tsc -p tsconfig.test.json && node --test build-test/test/chargeamps-api.test.js",
+    "prepack": "npm run build"
   },
   "bugs": {
-    "url": "https://github.com/michipi85/ioBroker.chargeamps/issues"
+    "url": "https://github.com/michipi85/ioBroker.chargeamps1/issues"
   },
   "readmeFilename": "README.md"
 }
