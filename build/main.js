@@ -288,19 +288,23 @@ class ChargeampsHalo extends utils.Adapter {
         }
         const relativeId = id.slice(ownId.length);
         try {
+            let resetCommand = false;
             if (relativeId.endsWith(".commands.reboot") && state.val === true) {
                 await this.handleReboot(relativeId);
+                resetCommand = true;
             }
             else if (relativeId.endsWith(".commands.remoteStart") && state.val === true) {
                 await this.handleRemoteStart(relativeId);
+                resetCommand = true;
             }
             else if (relativeId.endsWith(".commands.remoteStop") && state.val === true) {
                 await this.handleRemoteStop(relativeId);
+                resetCommand = true;
             }
             else if (relativeId.includes(".settings.")) {
                 await this.handleSetting(relativeId, state.val);
             }
-            await this.setStateAsync(relativeId, state.val, true);
+            await this.setStateAsync(relativeId, resetCommand ? false : state.val, true);
             await this.poll();
         }
         catch (error) {
@@ -379,7 +383,16 @@ class ChargeampsHalo extends utils.Adapter {
             changed.cableLock = Boolean(value);
         }
         else if (field === "maxCurrent") {
-            changed.maxCurrent = value === null || value === "" ? null : Number(value);
+            if (value === null || value === "") {
+                changed.maxCurrent = null;
+            }
+            else {
+                const maxCurrent = Number(value);
+                if (!Number.isFinite(maxCurrent)) {
+                    throw new Error(`Invalid maxCurrent value: ${String(value)}`);
+                }
+                changed.maxCurrent = maxCurrent;
+            }
         }
         await this.api?.setConnectorSettings(changed);
         this.connectorSettings.set(connectorKey(ref.chargePointId, ref.connectorId), changed);
