@@ -323,10 +323,10 @@ class ChargeampsHalo extends utils.Adapter {
       });
       await this.ensureState(`${base}.commands.remoteStart`, "Remote start", "boolean", "button", undefined, true);
       await this.ensureState(`${base}.commands.remoteStop`, "Remote stop", "boolean", "button", undefined, true);
-      await this.ensureState(`${base}.commands.enableCharging`, "Enable charging", "boolean", "button", undefined, true);
+      await this.ensureState(`${base}.commands.enableCharging`, "Switch wallbox on", "boolean", "button", undefined, true);
       await this.ensureState(
         `${base}.commands.disableCharging`,
-        "Disable charging",
+        "Set wallbox to standby",
         "boolean",
         "button",
         undefined,
@@ -441,7 +441,7 @@ class ChargeampsHalo extends utils.Adapter {
     await this.api?.remoteStart(ref.chargePointId, ref.connectorId, {
       rfid: this.config.rfid,
       rfidFormat: this.config.rfidFormat || "Hex",
-      rfidLength: Number(this.config.rfidLength) || this.config.rfid.length,
+      rfidLength: rfidLength(this.config.rfid, this.config.rfidFormat, Number(this.config.rfidLength)),
       externalTransactionId: `iobroker-${Date.now()}`,
     });
   }
@@ -522,6 +522,21 @@ function objectId(value: string): string {
 
 function connectorKey(chargePointId: string, connectorId: number): string {
   return `${chargePointId}:${connectorId}`;
+}
+
+function rfidLength(rfid: string, format: string | undefined, configuredLength: number): number {
+  const normalizedFormat = (format || "Hex").toLowerCase();
+  const hex = rfid.replace(/[^a-fA-F0-9]/g, "");
+
+  if (normalizedFormat === "hex" && Number.isFinite(configuredLength) && configuredLength > 0) {
+    return configuredLength === hex.length && hex.length % 2 === 0 ? hex.length / 2 : configuredLength;
+  }
+
+  if (Number.isFinite(configuredLength) && configuredLength > 0) {
+    return configuredLength;
+  }
+
+  return normalizedFormat === "hex" ? Math.ceil(hex.length / 2) : rfid.length;
 }
 
 function formatError(error: unknown): string {

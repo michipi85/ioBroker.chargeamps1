@@ -92,7 +92,7 @@
         "pollInterval": 60,
         "rfid": "",
         "rfidFormat": "Hex",
-        "rfidLength": 8
+        "rfidLength": 0
     },
     "objects": [
     {

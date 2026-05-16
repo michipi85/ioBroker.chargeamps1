@@ -99,7 +99,8 @@
     },
     "rfidLength": {
       "type": "number",
-      "label": "RFID length",
+      "label": "RFID length (HEX: bytes, Decimal: digits)",
+      "help": "For HEX values, enter the byte length, e.g. 4 for an 8-character HEX RFID. Leave 0 to calculate automatically.",
       "min": 0,
       "xs": 12,
       "sm": 12,
