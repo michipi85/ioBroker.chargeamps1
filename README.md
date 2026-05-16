@@ -1,104 +1,89 @@
 ![Logo](admin/chargeamps.png)
-# ioBroker.chargeamps
 
-[![NPM version](https://img.shields.io/npm/v/iobroker.chargeamps.svg)](https://www.npmjs.com/package/iobroker.chargeamps)
-[![Downloads](https://img.shields.io/npm/dm/iobroker.chargeamps.svg)](https://www.npmjs.com/package/iobroker.chargeamps)
-![Number of Installations](https://iobroker.live/badges/chargeamps-installed.svg)
-![Current version in stable repository](https://iobroker.live/badges/chargeamps-stable.svg)
+# Charge Amps for ioBroker
+### ioBroker adapter for Charge Amps Halo wallboxes via the Charge Amps External REST API.
 
-[![NPM](https://nodei.co/npm/iobroker.chargeamps.png?downloads=true)](https://nodei.co/npm/iobroker.chargeamps/)
+This adapter uses the official Charge Amps External API at https://eapi.charge.space. You need a Charge Amps account and an External API key. Charge Amps documents the API at https://eapi.charge.space/swagger/index.html; according to the public Python reference client, the current API version used here is v5.
 
-**Tests:** ![Test and Release](https://github.com/michipi85/ioBroker.chargeamps/workflows/Test%20and%20Release/badge.svg)
+## Features
+Login with email, password and External API key.
 
-## chargeamps adapter for ioBroker
+Poll owned charge points and connector status.
 
-controll ChargeAmps Wallbox API
+Expose current, voltage, total consumption, session and wallbox metadata.
 
-## Developer manual
-This section is intended for the developer. It can be deleted later.
+Change wallbox settings: dimmer and down light.
 
-### DISCLAIMER
+Change connector settings: mode, RFID lock, cable lock and maximum current.
 
-Please make sure that you consider copyrights and trademarks when you use names or logos of a company and add a disclaimer to your README.
-You can check other adapters for examples or ask in the developer community. Using a name or logo of a company without permission may cause legal problems for you.
+Commands for remote start, remote stop and reboot.
 
-### Getting started
+Convenience commands for connector mode: switch wallbox on, set wallbox to standby and use schedule.
 
-You are almost done, only a few steps left:
-1. Create a new repository on GitHub with the name `ioBroker.chargeamps`
-1. Initialize the current folder as a new git repository:  
-    ```bash
-    git init -b main
-    git add .
-    git commit -m "Initial commit"
-    ```
-1. Link your local repository with the one on GitHub:  
-    ```bash
-    git remote add origin https://github.com/michipi85/ioBroker.chargeamps
-    ```
+## Configuration
+Create an instance of the adapter and configure:
 
-1. Push all files to the GitHub repo:  
-    ```bash
-    git push origin main
-    ```
-1. Add a new secret under https://github.com/michipi85/ioBroker.chargeamps/settings/secrets. It must be named `AUTO_MERGE_TOKEN` and contain a personal access token with push access to the repository, e.g. yours. You can create a new token under https://github.com/settings/tokens.
+email: Charge Amps account email
 
-1. Head over to [main.js](main.js) and start programming!
+password: Charge Amps account password
 
-### Best Practices
-We've collected some [best practices](https://github.com/ioBroker/ioBroker.repositories#development-and-coding-best-practices) regarding ioBroker development and coding in general. If you're new to ioBroker or Node.js, you should
-check them out. If you're already experienced, you should also take a look at them - you might learn something new :)
+apiKey: External API key from Charge Amps
 
-### Scripts in `package.json`
-Several npm scripts are predefined for your convenience. You can run them using `npm run <scriptname>`
-| Script name | Description |
-|-------------|-------------|
-| `test:js` | Executes the tests you defined in `*.test.js` files. |
-| `test:package` | Ensures your `package.json` and `io-package.json` are valid. |
-| `test:integration` | Tests the adapter startup with an actual instance of ioBroker. |
-| `test` | Performs a minimal test run on package files and your tests. |
-| `check` | Performs a type-check on your code (without compiling anything). |
-| `lint` | Runs `ESLint` to check your code for formatting errors and potential bugs. |
-| `translate` | Translates texts in your adapter to all required languages, see [`@iobroker/adapter-dev`](https://github.com/ioBroker/adapter-dev#manage-translations) for more details. |
-| `release` | Creates a new release, see [`@alcalzone/release-script`](https://github.com/AlCalzone/release-script#usage) for more details. |
+pollInterval: polling interval in seconds, minimum 30
 
-### Writing tests
-When done right, testing code is invaluable, because it gives you the 
-confidence to change your code while knowing exactly if and when 
-something breaks. A good read on the topic of test-driven development 
-is https://hackernoon.com/introduction-to-test-driven-development-tdd-61a13bc92d92. 
-Although writing tests before the code might seem strange at first, but it has very 
-clear upsides.
 
-The template provides you with basic tests for the adapter startup and package files.
-It is recommended that you add your own tests into the mix.
+rfid, rfidFormat, rfidLength: optional values used for remoteStart. 
 
-### Publishing the adapter
-Using GitHub Actions, you can enable automatic releases on npm whenever you push a new git tag that matches the form 
-`v<major>.<minor>.<patch>`. We **strongly recommend** that you do. The necessary steps are described in `.github/workflows/test-and-release.yml`.
+For HEX RFID values, rfidLength is the byte length, not the number of HEX characters. Example: 8 HEX characters are 4 bytes. Set rfidLength to 0 to calculate it automatically.
 
-Since you installed the release script, you can create a new
-release simply by calling:
-```bash
-npm run release
-```
-Additional command line options for the release script are explained in the
-[release-script documentation](https://github.com/AlCalzone/release-script#command-line).
 
-To get your adapter released in ioBroker, please refer to the documentation 
-of [ioBroker.repositories](https://github.com/ioBroker/ioBroker.repositories#requirements-for-adapter-to-get-added-to-the-latest-repository).
+## State Structure
+The adapter creates states under:
 
-### Test the adapter manually with dev-server
-Since you set up `dev-server`, you can use it to run, test and debug your adapter.
+chargeamps1.0.chargepoints.<chargePointId>
 
-You may start `dev-server` by calling from your dev directory:
-```bash
-dev-server watch
-```
+Connector states are placed below:
 
-The ioBroker.admin interface will then be available at http://localhost:8081/
+chargepoints.<chargePointId>.connectors.<connectorId>
 
-Please refer to the [`dev-server` documentation](https://github.com/ioBroker/dev-server#command-line) for more details.
+**Writable command states:**
+
+commands.reboot
+
+connectors.<connectorId>.commands.remoteStart
+
+connectors.<connectorId>.commands.remoteStop
+
+connectors.<connectorId>.commands.enableCharging
+
+connectors.<connectorId>.commands.disableCharging
+
+connectors.<connectorId>.commands.useSchedule
+
+
+**The convenience commands change the connector mode:**
+
+enableCharging sets mode to On and switches the wallbox/connector on.
+
+disableCharging sets mode to Off and puts the wallbox/connector into standby.
+
+useSchedule sets mode to Schedule.
+
+
+**Writable setting states:**
+
+settings.dimmer
+
+settings.downLight
+
+connectors.<connectorId>.settings.mode
+
+connectors.<connectorId>.settings.rfidLock
+
+connectors.<connectorId>.settings.cableLock
+
+connectors.<connectorId>.settings.maxCurrent
+
 
 ## Changelog
 <!--
@@ -111,23 +96,3 @@ Please refer to the [`dev-server` documentation](https://github.com/ioBroker/dev
 
 ## License
 MIT License
-
-Copyright (c) 2025 michipi85 <sammer.michael.ms@gmail.com>
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
