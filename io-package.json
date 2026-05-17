@@ -1,11 +1,11 @@
 {
     "common": {
         "name": "chargeamps1",
-        "version": "0.1.7",
+        "version": "0.1.8",
          "news": {
-            "0.1.7": {
-                "en": "Added support for RFID cards and improved error handling.",
-                "de": "Unterstützung für RFID-Karten hinzugefügt und Fehlerbehandlung verbessert.",
+            "0.1.8": {
+                "en": "fix Dependabot security alert and update dependencies.",
+                "de": "fix Dependabot security alert and update dependencies.",
                 "ru": "Добавлена поддержка RFID-карт и улучшена обработка ошибок.",
                 "pt": "Adicionado suporte para cartões RFID e melhor tratamento de erros.",
                 "nl": "Ondersteuning voor RFID-kaarten toegevoegd en foutafhandeling verbeterd.",
@@ -15,20 +15,6 @@
                 "pl": "Dodano obsługę kart RFID i poprawiono obsługę błędów.",
                 "uk": "Додано підтримку карток RFID та покращено обробку помилок.",
                 "zh-cn": "添加了对RFID卡的支持，并改进了错误处理。"
-            }
-        "news": {
-            "0.1.6": {
-                "en": "Bug fixes and improvements",
-                "de": "Fehlerbehebungen und Verbesserungen",
-                "ru": "Исправления ошибок и улучшения",
-                "pt": "Correções de bugs e melhorias",
-                "nl": "Fouten verholpen en verbeteringen",
-                "fr": "Corrections de bugs et améliorations",
-                "it": "Correzioni di bug e miglioramenti",
-                "es": "Correcciones de errores y mejoras",
-                "pl": "Poprawki błędów i ulepszenia",
-                "uk": "Виправлення помилок та покращення",
-                "zh-cn": "错误修复和改进"
             }
         },
         "titleLang": {

@@ -1,6 +1,6 @@
 {
   "name": "iobroker.chargeamps1",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "controll ChargeAmps Wallbox API",
   "author": {
     "name": "michipi85",
@@ -26,7 +26,6 @@
   "devDependencies": {
     "@iobroker/types": "^7.1.2",
     "@types/node": "^20.19.0",
-    "@iobroker/adapter-react-v5": "^7.4.10",
     "typescript": "^5.8.3"
   },
   "main": "build/main.js",
