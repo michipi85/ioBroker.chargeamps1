@@ -1,7 +1,21 @@
 {
     "common": {
         "name": "chargeamps1",
-        "version": "0.1.6",
+        "version": "0.1.7",
+         "news": {
+            "0.1.7": {
+                "en": "Added support for RFID cards and improved error handling.",
+                "de": "Unterstützung für RFID-Karten hinzugefügt und Fehlerbehandlung verbessert.",
+                "ru": "Добавлена поддержка RFID-карт и улучшена обработка ошибок.",
+                "pt": "Adicionado suporte para cartões RFID e melhor tratamento de erros.",
+                "nl": "Ondersteuning voor RFID-kaarten toegevoegd en foutafhandeling verbeterd.",
+                "fr": "Ajout du support pour les cartes RFID et amélioration de la gestion des erreurs.",
+                "it": "Aggiunto supporto per le carte RFID e migliorata la gestione degli errori.",
+                "es": "Se agregó soporte para tarjetas RFID y se mejoró el manejo de errores.",
+                "pl": "Dodano obsługę kart RFID i poprawiono obsługę błędów.",
+                "uk": "Додано підтримку карток RFID та покращено обробку помилок.",
+                "zh-cn": "添加了对RFID卡的支持，并改进了错误处理。"
+            }
         "news": {
             "0.1.6": {
                 "en": "Bug fixes and improvements",

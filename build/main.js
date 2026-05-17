@@ -54,6 +54,7 @@ class ChargeampsHalo extends utils.Adapter {
     }
     async onReady() {
         await this.ensureBaseObjects();
+        await this.deleteObsoleteSessionObjects();
         await this.setState("info.connection", false, true);
         if (!this.config.email || !this.config.password || !this.config.apiKey) {
             this.log.warn("Please configure email, password and API key.");
@@ -185,6 +186,30 @@ class ChargeampsHalo extends utils.Adapter {
             common: { name: "Charge points" },
             native: {},
         });
+    }
+    async deleteObsoleteSessionObjects() {
+        const objects = await this.getObjectListAsync({
+            startkey: `${this.namespace}.chargepoints.`,
+            endkey: `${this.namespace}.chargepoints.\u9999`,
+        });
+        const obsoleteChannels = new Set();
+        const namespacePattern = escapeRegExp(this.namespace);
+        const obsoleteSessionPattern = new RegExp(`^${namespacePattern}\\.(.+\\.last(?:Start|Stop)Session)(?:\\.|$)`);
+        for (const row of objects.rows) {
+            const match = row.id.match(obsoleteSessionPattern);
+            if (match) {
+                obsoleteChannels.add(match[1]);
+            }
+        }
+        for (const id of [...obsoleteChannels].sort((a, b) => a.length - b.length)) {
+            try {
+                await this.delObjectAsync(id, { recursive: true });
+                this.log.info(`Removed obsolete object ${id}`);
+            }
+            catch (error) {
+                this.log.debug(`Could not remove obsolete object ${id}: ${formatError(error)}`);
+            }
+        }
     }
     async ensureChargePointObjects(chargePoint) {
         const cpId = objectId(chargePoint.id);
@@ -441,6 +466,9 @@ function objectId(value) {
 }
 function connectorKey(chargePointId, connectorId) {
     return `${chargePointId}:${connectorId}`;
+}
+function escapeRegExp(value) {
+    return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 function rfidLength(rfid, format, configuredLength) {
     const normalizedFormat = (format || "Hex").toLowerCase();
