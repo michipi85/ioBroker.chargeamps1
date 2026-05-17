@@ -372,23 +372,23 @@ class ChargeampsHalo extends utils.Adapter {
     try {
       let resetCommand = false;
       if (relativeId.endsWith(".commands.reboot") && state.val === true) {
+        resetCommand = true;
         await this.handleReboot(relativeId);
-        resetCommand = true;
       } else if (relativeId.endsWith(".commands.remoteStart") && state.val === true) {
+        resetCommand = true;
         await this.handleRemoteStart(relativeId);
-        resetCommand = true;
       } else if (relativeId.endsWith(".commands.remoteStop") && state.val === true) {
+        resetCommand = true;
         await this.handleRemoteStop(relativeId);
-        resetCommand = true;
       } else if (relativeId.endsWith(".commands.enableCharging") && state.val === true) {
+        resetCommand = true;
         await this.handleConnectorModeCommand(relativeId, "On");
-        resetCommand = true;
       } else if (relativeId.endsWith(".commands.disableCharging") && state.val === true) {
+        resetCommand = true;
         await this.handleConnectorModeCommand(relativeId, "Off");
-        resetCommand = true;
       } else if (relativeId.endsWith(".commands.useSchedule") && state.val === true) {
-        await this.handleConnectorModeCommand(relativeId, "Schedule");
         resetCommand = true;
+        await this.handleConnectorModeCommand(relativeId, "Schedule");
       } else if (relativeId.includes(".settings.")) {
         await this.handleSetting(relativeId, state.val);
       }
@@ -396,6 +396,9 @@ class ChargeampsHalo extends utils.Adapter {
       await this.poll();
     } catch (error) {
       this.log.warn(`Command ${relativeId} failed: ${formatError(error)}`);
+      if (relativeId.includes(".commands.") && state.val === true) {
+        await this.setStateAsync(relativeId, false, true);
+      }
     }
   }
 

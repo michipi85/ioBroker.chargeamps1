@@ -13,9 +13,9 @@
       "newLine": true,
       "xs": 12,
       "sm": 12,
-      "md": 8,
-      "lg": 3,
-      "xl": 3
+      "md": 12,
+      "lg": 12,
+      "xl": 12
     },
     "password": {
       "type": "password",
@@ -69,7 +69,12 @@
       "type": "header",
       "text": "RFID settings (for remote start)",
       "size": 2,
-      "newLine": true
+      "newLine": true,
+      "xs": 12,
+      "sm": 12,
+      "md": 8,
+      "lg": 4,
+      "xl": 4
     },
 
     "rfid": {
