@@ -112,6 +112,173 @@
       "md": 8,
       "lg": 4,
       "xl": 4
+    },
+
+    "PV automation": {
+      "type": "header",
+      "text": "PV automation",
+      "size": 2,
+      "newLine": true
+    },
+    "pvAutomationEnabled": {
+      "type": "checkbox",
+      "label": "Enable PV automation",
+      "help": "Creates automation states and allows the adapter to control connector mode and maximum current from PV surplus.",
+      "newLine": true
+    },
+    "pvChargePointId": {
+      "type": "text",
+      "label": "Charge point ID",
+      "help": "Optional. Leave empty if this adapter has only one connector.",
+      "newLine": true,
+      "xs": 12,
+      "sm": 12,
+      "md": 8,
+      "lg": 4,
+      "xl": 4
+    },
+    "pvConnectorId": {
+      "type": "number",
+      "label": "Connector ID",
+      "min": 1,
+      "xs": 12,
+      "sm": 12,
+      "md": 8,
+      "lg": 4,
+      "xl": 4
+    },
+    "pvGridPowerState": {
+      "type": "text",
+      "label": "Grid power state ID",
+      "help": "State with current grid power in W. By default negative values mean feed-in/export.",
+      "newLine": true,
+      "xs": 12,
+      "sm": 12,
+      "md": 12,
+      "lg": 8,
+      "xl": 8
+    },
+    "pvGridPowerExportIsNegative": {
+      "type": "checkbox",
+      "label": "Negative grid power means feed-in",
+      "newLine": true
+    },
+    "pvBatterySocState": {
+      "type": "text",
+      "label": "Battery SOC state ID",
+      "help": "Optional state with battery state of charge in percent.",
+      "newLine": true,
+      "xs": 12,
+      "sm": 12,
+      "md": 12,
+      "lg": 8,
+      "xl": 8
+    },
+    "pvMinBatterySoc": {
+      "type": "number",
+      "label": "Minimum battery SOC in %",
+      "min": 0,
+      "max": 100,
+      "xs": 12,
+      "sm": 12,
+      "md": 8,
+      "lg": 4,
+      "xl": 4
+    },
+    "pvMinCurrent": {
+      "type": "number",
+      "label": "Minimum current in A",
+      "min": 1,
+      "newLine": true,
+      "xs": 12,
+      "sm": 12,
+      "md": 8,
+      "lg": 4,
+      "xl": 4
+    },
+    "pvMaxCurrent": {
+      "type": "number",
+      "label": "Maximum current in A",
+      "min": 1,
+      "xs": 12,
+      "sm": 12,
+      "md": 8,
+      "lg": 4,
+      "xl": 4
+    },
+    "pvVoltage": {
+      "type": "number",
+      "label": "Voltage per phase",
+      "min": 1,
+      "xs": 12,
+      "sm": 12,
+      "md": 8,
+      "lg": 4,
+      "xl": 4
+    },
+    "pvPhases": {
+      "type": "number",
+      "label": "Number of phases",
+      "min": 1,
+      "max": 3,
+      "xs": 12,
+      "sm": 12,
+      "md": 8,
+      "lg": 4,
+      "xl": 4
+    },
+    "pvStartSurplusWatts": {
+      "type": "number",
+      "label": "Start surplus in W",
+      "help": "PV automation switches the connector on after this surplus is stable for the start delay.",
+      "newLine": true,
+      "xs": 12,
+      "sm": 12,
+      "md": 8,
+      "lg": 4,
+      "xl": 4
+    },
+    "pvStopSurplusWatts": {
+      "type": "number",
+      "label": "Stop surplus in W",
+      "help": "PV automation switches the connector to standby when surplus is at or below this value for the stop delay.",
+      "xs": 12,
+      "sm": 12,
+      "md": 8,
+      "lg": 4,
+      "xl": 4
+    },
+    "pvStartDelaySeconds": {
+      "type": "number",
+      "label": "Start delay in seconds",
+      "min": 0,
+      "newLine": true,
+      "xs": 12,
+      "sm": 12,
+      "md": 8,
+      "lg": 4,
+      "xl": 4
+    },
+    "pvStopDelaySeconds": {
+      "type": "number",
+      "label": "Stop delay in seconds",
+      "min": 0,
+      "xs": 12,
+      "sm": 12,
+      "md": 8,
+      "lg": 4,
+      "xl": 4
+    },
+    "pvCompletionStandbyDelaySeconds": {
+      "type": "number",
+      "label": "Standby delay after completed charging in seconds",
+      "help": "When connector status is Finishing or SuspendedEV, the adapter sets mode to Off after this delay.",
+      "min": 0,
+      "xs": 12,
+      "sm": 12,
+      "md": 8,
+      "lg": 4,
+      "xl": 4
     }
   }
 }

@@ -1,5 +1,16 @@
 {
+    "typescript.tsdk": "node_modules/typescript/lib",
     "eslint.enable": true,
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "[typescript]": {
+		"editor.codeActionsOnSave": {
+			"source.organizeImports": "explicit"
+		}
+	},
+	//"cSpell.words": ["iobroker", "repochecker", "Weblate"],
+	"editor.foldingImportsByDefault": true,
+	"editor.pasteAs.preferences": ["text.updateImports"]
     "json.schemas": [
         {
             "fileMatch": [

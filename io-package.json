@@ -1,20 +1,20 @@
 {
     "common": {
         "name": "chargeamps1",
-        "version": "0.1.9",
+        "version": "0.2.0",
          "news": {
-            "0.1.8": {
-                "en": "npm fix.",
-                "de": "npm fix.",
-                "ru": "Добавлена поддержка RFID-карт и улучшена обработка ошибок.",
-                "pt": "Adicionado suporte para cartões RFID e melhor tratamento de erros.",
-                "nl": "Ondersteuning voor RFID-kaarten toegevoegd en foutafhandeling verbeterd.",
-                "fr": "Ajout du support pour les cartes RFID et amélioration de la gestion des erreurs.",
-                "it": "Aggiunto supporto per le carte RFID e migliorata la gestione degli errori.",
-                "es": "Se agregó soporte para tarjetas RFID y se mejoró el manejo de errores.",
-                "pl": "Dodano obsługę kart RFID i poprawiono obsługę błędów.",
-                "uk": "Додано підтримку карток RFID та покращено обробку помилок.",
-                "zh-cn": "添加了对RFID卡的支持，并改进了错误处理。"
+            "0.2.0": {
+                "en": "Major update with new features and improvements.",
+                "de": "Große Aktualisierung mit neuen Funktionen und Verbesserungen.",
+                "ru": "Крупное обновление с новыми функциями и улучшениями.",
+                "pt": "Atualização principal com novas funcionalidades e melhorias.",
+                "nl": "Grote update met nieuwe functies en verbeteringen.",
+                "fr": "Mise à jour majeure avec de nouvelles fonctionnalités et améliorations.",
+                "it": "Aggiornamento principale con nuove funzionalità e miglioramenti.",
+                "es": "Actualización principal con nuevas características y mejoras.",
+                "pl": "Główna aktualizacja z nowymi funkcjami i poprawami.",
+                "uk": "Головне оновлення з новими функціями та покращеннями.",
+                "zh-cn": "主要更新，包含新功能和改进。"
             }
         },
         "titleLang": {
@@ -92,7 +92,23 @@
         "pollInterval": 60,
         "rfid": "",
         "rfidFormat": "Hex",
-        "rfidLength": 0
+        "rfidLength": 0,
+        "pvAutomationEnabled": false,
+        "pvChargePointId": "",
+        "pvConnectorId": 1,
+        "pvGridPowerState": "",
+        "pvGridPowerExportIsNegative": true,
+        "pvBatterySocState": "",
+        "pvMinBatterySoc": 20,
+        "pvMinCurrent": 6,
+        "pvMaxCurrent": 16,
+        "pvVoltage": 240,
+        "pvPhases": 3,
+        "pvStartSurplusWatts": 4500,
+        "pvStopSurplusWatts": 500,
+        "pvStartDelaySeconds": 180,
+        "pvStopDelaySeconds": 90,
+        "pvCompletionStandbyDelaySeconds": 60
     },
     "objects": [
     {

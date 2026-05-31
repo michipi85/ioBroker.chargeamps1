@@ -11,6 +11,22 @@ declare global {
       rfid: string;
       rfidFormat: string;
       rfidLength: number;
+      pvAutomationEnabled: boolean;
+      pvChargePointId: string;
+      pvConnectorId: number;
+      pvGridPowerState: string;
+      pvGridPowerExportIsNegative: boolean;
+      pvBatterySocState: string;
+      pvMinBatterySoc: number;
+      pvMinCurrent: number;
+      pvMaxCurrent: number;
+      pvVoltage: number;
+      pvPhases: number;
+      pvStartSurplusWatts: number;
+      pvStopSurplusWatts: number;
+      pvStartDelaySeconds: number;
+      pvStopDelaySeconds: number;
+      pvCompletionStandbyDelaySeconds: number;
     }
   }
 }

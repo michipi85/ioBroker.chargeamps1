@@ -38,11 +38,16 @@ const chargeamps_api_1 = require("./chargeamps-api");
 class ChargeampsHalo extends utils.Adapter {
     api;
     pollTimer;
+    pvStartTimer;
+    pvStopTimer;
+    pvCompletionTimer;
     chargePointIds = new Map();
     connectorIds = new Map();
     chargePointSettings = new Map();
     connectorSettings = new Map();
+    connectorStatuses = new Map();
     polling = false;
+    pvEvaluating = false;
     constructor(options = {}) {
         super({
             ...options,
@@ -56,6 +61,7 @@ class ChargeampsHalo extends utils.Adapter {
         await this.ensureBaseObjects();
         await this.deleteObsoleteSessionObjects();
         await this.setState("info.connection", false, true);
+        await this.setState("automation.pv.enabled", Boolean(this.config.pvAutomationEnabled), true);
         if (!this.config.email || !this.config.password || !this.config.apiKey) {
             this.log.warn("Please configure email, password and API key.");
             return;
@@ -67,7 +73,9 @@ class ChargeampsHalo extends utils.Adapter {
             apiBaseUrl: this.config.apiBaseUrl,
         });
         await this.subscribeStatesAsync("*");
+        await this.subscribePvAutomationStates();
         await this.poll();
+        await this.evaluatePvAutomation("startup");
     }
     onUnload(callback) {
         try {
@@ -75,6 +83,7 @@ class ChargeampsHalo extends utils.Adapter {
                 this.clearTimeout(this.pollTimer);
                 this.pollTimer = undefined;
             }
+            this.clearPvTimers();
             void this.setState("info.connection", false, true);
             callback();
         }
@@ -101,6 +110,7 @@ class ChargeampsHalo extends utils.Adapter {
                 await this.updateChargePoint(chargePoint);
             }
             await this.setState("info.connection", true, true);
+            await this.evaluatePvAutomation("poll");
         }
         catch (error) {
             await this.setState("info.connection", false, true);
@@ -139,6 +149,9 @@ class ChargeampsHalo extends utils.Adapter {
             const connectorSettings = await this.api.getConnectorSettings(chargePoint.id, connector.connectorId);
             this.connectorSettings.set(connectorKey(chargePoint.id, connector.connectorId), connectorSettings);
             const connectorStatus = status.connectorStatuses.find((item) => item.connectorId === connector.connectorId);
+            if (connectorStatus) {
+                this.connectorStatuses.set(connectorKey(chargePoint.id, connector.connectorId), connectorStatus);
+            }
             await this.setStateChangedAsync(`chargepoints.${cpId}.connectors.${connectorId}.info.type`, connector.type, true);
             await this.setStateChangedAsync(`chargepoints.${cpId}.connectors.${connectorId}.settings.mode`, connectorSettings.mode, true);
             await this.setStateChangedAsync(`chargepoints.${cpId}.connectors.${connectorId}.settings.rfidLock`, connectorSettings.rfidLock, true);
@@ -186,6 +199,26 @@ class ChargeampsHalo extends utils.Adapter {
             common: { name: "Charge points" },
             native: {},
         });
+        await this.extendObjectAsync("automation", {
+            type: "channel",
+            common: { name: "Automation" },
+            native: {},
+        });
+        await this.extendObjectAsync("automation.pv", {
+            type: "channel",
+            common: { name: "PV automation" },
+            native: {},
+        });
+        await this.ensureState("automation.pv.enabled", "PV automation enabled", "boolean", "switch", undefined, true);
+        await this.ensureState("automation.pv.active", "PV automation active", "boolean", "indicator", undefined, false);
+        await this.ensureState("automation.pv.surplusPower", "Surplus power", "number", "value.power", "W", false);
+        await this.ensureState("automation.pv.batterySoc", "Battery state of charge", "number", "value.battery", "%", false);
+        await this.ensureState("automation.pv.calculatedCurrent", "Calculated current", "number", "value.current", "A", false);
+        await this.ensureState("automation.pv.decision", "Decision", "string", "text", undefined, false);
+        await this.ensureState("automation.pv.lastAction", "Last action", "string", "text", undefined, false);
+        await this.ensureState("automation.pv.startPending", "Start pending", "boolean", "indicator", undefined, false);
+        await this.ensureState("automation.pv.stopPending", "Stop pending", "boolean", "indicator", undefined, false);
+        await this.ensureState("automation.pv.completionPending", "Completion standby pending", "boolean", "indicator", undefined, false);
     }
     async deleteObsoleteSessionObjects() {
         const objects = await this.getObjectListAsync({
@@ -209,6 +242,14 @@ class ChargeampsHalo extends utils.Adapter {
             catch (error) {
                 this.log.debug(`Could not remove obsolete object ${id}: ${formatError(error)}`);
             }
+        }
+    }
+    async subscribePvAutomationStates() {
+        const stateIds = [this.config.pvGridPowerState, this.config.pvBatterySocState]
+            .map((id) => id?.trim())
+            .filter((id) => Boolean(id));
+        if (stateIds.length) {
+            await this.subscribeForeignStatesAsync(stateIds);
         }
     }
     async ensureChargePointObjects(chargePoint) {
@@ -307,11 +348,17 @@ class ChargeampsHalo extends utils.Adapter {
         });
     }
     async onStateChange(id, state) {
-        if (!state || state.ack || !this.api) {
+        if (!state || !this.api) {
             return;
         }
         const ownId = `${this.namespace}.`;
         if (!id.startsWith(ownId)) {
+            if (this.isPvAutomationSourceState(id)) {
+                await this.evaluatePvAutomation(`state ${id} changed`);
+            }
+            return;
+        }
+        if (state.ack) {
             return;
         }
         const relativeId = id.slice(ownId.length);
@@ -340,6 +387,11 @@ class ChargeampsHalo extends utils.Adapter {
             else if (relativeId.endsWith(".commands.useSchedule") && state.val === true) {
                 resetCommand = true;
                 await this.handleConnectorModeCommand(relativeId, "Schedule");
+            }
+            else if (relativeId === "automation.pv.enabled") {
+                await this.setStateAsync(relativeId, Boolean(state.val), true);
+                await this.evaluatePvAutomation("enabled changed");
+                return;
             }
             else if (relativeId.includes(".settings.")) {
                 await this.handleSetting(relativeId, state.val);
@@ -382,6 +434,9 @@ class ChargeampsHalo extends utils.Adapter {
         if (!ref) {
             return;
         }
+        await this.remoteStartConnector(ref);
+    }
+    async remoteStartConnector(ref) {
         if (!this.config.rfid) {
             this.log.warn("Remote start was skipped because the Charge Amps API requires an RFID for this command.");
             return;
@@ -396,8 +451,257 @@ class ChargeampsHalo extends utils.Adapter {
     async handleRemoteStop(relativeId) {
         const ref = this.resolveConnector(relativeId);
         if (ref) {
-            await this.api?.remoteStop(ref.chargePointId, ref.connectorId);
+            await this.remoteStopConnector(ref);
         }
+    }
+    async remoteStopConnector(ref) {
+        await this.api?.remoteStop(ref.chargePointId, ref.connectorId);
+    }
+    isPvAutomationSourceState(id) {
+        return [this.config.pvGridPowerState, this.config.pvBatterySocState]
+            .map((stateId) => stateId?.trim())
+            .some((stateId) => stateId === id);
+    }
+    async evaluatePvAutomation(reason) {
+        if (!this.api || this.pvEvaluating) {
+            return;
+        }
+        this.pvEvaluating = true;
+        try {
+            const state = await this.readPvAutomationState();
+            await this.publishPvAutomationState(state);
+            if (!state.enabled) {
+                this.clearPvTimers();
+                await this.setStateChangedAsync("automation.pv.active", false, true);
+                await this.setStateChangedAsync("automation.pv.decision", "disabled", true);
+                return;
+            }
+            const ref = this.resolvePvConnector();
+            if (!ref) {
+                this.clearPvTimers();
+                await this.setStateChangedAsync("automation.pv.active", false, true);
+                await this.setStateChangedAsync("automation.pv.decision", "target connector not ready", true);
+                return;
+            }
+            await this.setStateChangedAsync("automation.pv.active", true, true);
+            const socOk = state.batterySoc === null || state.batterySoc >= pvNumber(this.config.pvMinBatterySoc, 20);
+            const startSurplus = pvNumber(this.config.pvStartSurplusWatts, 4500);
+            const stopSurplus = pvNumber(this.config.pvStopSurplusWatts, 500);
+            const connectorStatus = this.connectorStatuses.get(connectorKey(ref.chargePointId, ref.connectorId));
+            const isCharging = connectorStatus?.status === "Charging";
+            if (this.isChargingComplete(connectorStatus?.status)) {
+                this.clearPvStartTimer();
+                this.clearPvStopTimer();
+                this.schedulePvCompletionStandby(ref, connectorStatus?.status || "complete");
+                await this.setStateChangedAsync("automation.pv.decision", `completion standby pending (${connectorStatus?.status})`, true);
+                return;
+            }
+            this.clearPvCompletionTimer();
+            if (state.surplusPower >= startSurplus && socOk) {
+                this.clearPvStopTimer();
+                await this.applyPvCurrent(ref, state.calculatedCurrent, reason);
+                if (!isCharging) {
+                    this.schedulePvStart(ref, state.calculatedCurrent);
+                    await this.setStateChangedAsync("automation.pv.decision", "start pending", true);
+                }
+                else {
+                    this.clearPvStartTimer();
+                    await this.setStateChangedAsync("automation.pv.decision", "charging with PV surplus", true);
+                }
+                return;
+            }
+            if (state.surplusPower <= stopSurplus || !socOk) {
+                this.clearPvStartTimer();
+                if (isCharging) {
+                    this.schedulePvStop(ref, socOk ? "surplus too low" : "battery SOC too low");
+                }
+                else {
+                    this.clearPvStopTimer();
+                }
+                await this.setStateChangedAsync("automation.pv.decision", socOk ? "waiting for surplus" : "waiting for battery SOC", true);
+                return;
+            }
+            this.clearPvTimers();
+            await this.setStateChangedAsync("automation.pv.decision", "surplus between start and stop thresholds", true);
+        }
+        catch (error) {
+            this.log.warn(`PV automation failed: ${formatError(error)}`);
+            await this.setStateChangedAsync("automation.pv.decision", `error: ${formatError(error)}`, true);
+        }
+        finally {
+            this.pvEvaluating = false;
+        }
+    }
+    async readPvAutomationState() {
+        const enabledState = await this.getStateAsync("automation.pv.enabled");
+        const enabled = Boolean(enabledState?.val) && Boolean(this.config.pvAutomationEnabled);
+        const gridPowerStateId = this.config.pvGridPowerState?.trim();
+        if (!enabled || !gridPowerStateId) {
+            return {
+                enabled: false,
+                surplusPower: 0,
+                batterySoc: null,
+                calculatedCurrent: pvNumber(this.config.pvMinCurrent, 6),
+                decision: gridPowerStateId ? "disabled" : "missing grid power state",
+            };
+        }
+        const gridPower = await this.readForeignNumber(gridPowerStateId);
+        const exportIsNegative = this.config.pvGridPowerExportIsNegative !== false;
+        const surplusPower = exportIsNegative ? -gridPower : gridPower;
+        const batterySocStateId = this.config.pvBatterySocState?.trim();
+        const batterySoc = batterySocStateId ? await this.readForeignNumber(batterySocStateId) : null;
+        const calculatedCurrent = this.calculatePvCurrent(surplusPower);
+        return {
+            enabled,
+            surplusPower,
+            batterySoc,
+            calculatedCurrent,
+            decision: "evaluating",
+        };
+    }
+    async publishPvAutomationState(state) {
+        await this.setStateChangedAsync("automation.pv.surplusPower", state.surplusPower, true);
+        await this.setStateChangedAsync("automation.pv.batterySoc", state.batterySoc, true);
+        await this.setStateChangedAsync("automation.pv.calculatedCurrent", state.calculatedCurrent, true);
+        await this.setStateChangedAsync("automation.pv.decision", state.decision, true);
+    }
+    async readForeignNumber(id) {
+        const state = await this.getForeignStateAsync(id);
+        const value = Number(state?.val);
+        if (!Number.isFinite(value)) {
+            throw new Error(`State ${id} does not contain a numeric value`);
+        }
+        return value;
+    }
+    calculatePvCurrent(surplusPower) {
+        const minCurrent = pvNumber(this.config.pvMinCurrent, 6);
+        const maxCurrent = Math.max(minCurrent, pvNumber(this.config.pvMaxCurrent, 16));
+        const wattsPerAmp = Math.max(1, pvNumber(this.config.pvVoltage, 240) * pvNumber(this.config.pvPhases, 3));
+        return clamp(Math.floor(surplusPower / wattsPerAmp), minCurrent, maxCurrent);
+    }
+    resolvePvConnector() {
+        const connectorId = objectId(String(Number(this.config.pvConnectorId) || 1));
+        const configuredChargePointId = this.config.pvChargePointId?.trim();
+        if (configuredChargePointId) {
+            const cpId = objectId(configuredChargePointId);
+            return this.connectorIds.get(`${cpId}.${connectorId}`);
+        }
+        if (this.connectorIds.size === 1) {
+            return [...this.connectorIds.values()][0];
+        }
+        return undefined;
+    }
+    schedulePvStart(ref, current) {
+        if (this.pvStartTimer) {
+            return;
+        }
+        this.pvStartTimer = this.setTimeout(() => {
+            this.pvStartTimer = undefined;
+            void (async () => {
+                const state = await this.readPvAutomationState();
+                const freshRef = this.resolvePvConnector() || ref;
+                const freshCurrent = state.calculatedCurrent || current;
+                await this.applyPvCurrent(freshRef, freshCurrent, "PV surplus stable");
+                await this.remoteStartConnector(freshRef);
+                await this.setStateChangedAsync("automation.pv.lastAction", `Remote start with ${freshCurrent} A (PV surplus stable)`, true);
+                await this.setStateChangedAsync("automation.pv.startPending", false, true);
+                await this.poll();
+            })();
+        }, pvNumber(this.config.pvStartDelaySeconds, 180) * 1000);
+        void this.setStateChangedAsync("automation.pv.startPending", true, true);
+        void this.setStateChangedAsync("automation.pv.lastAction", "Start timer scheduled", true);
+    }
+    schedulePvStop(ref, reason) {
+        if (this.pvStopTimer) {
+            return;
+        }
+        this.pvStopTimer = this.setTimeout(() => {
+            this.pvStopTimer = undefined;
+            void (async () => {
+                await this.remoteStopConnector(ref);
+                await this.setStateChangedAsync("automation.pv.lastAction", `Remote stop (${reason})`, true);
+                await this.setStateChangedAsync("automation.pv.stopPending", false, true);
+                await this.poll();
+            })();
+        }, pvNumber(this.config.pvStopDelaySeconds, 90) * 1000);
+        void this.setStateChangedAsync("automation.pv.stopPending", true, true);
+        void this.setStateChangedAsync("automation.pv.lastAction", `Stop timer scheduled: ${reason}`, true);
+    }
+    schedulePvCompletionStandby(ref, status) {
+        if (this.pvCompletionTimer) {
+            return;
+        }
+        this.pvCompletionTimer = this.setTimeout(() => {
+            this.pvCompletionTimer = undefined;
+            void this.applyPvStandby(ref, `charging completed: ${status}`);
+        }, pvNumber(this.config.pvCompletionStandbyDelaySeconds, 60) * 1000);
+        void this.setStateChangedAsync("automation.pv.completionPending", true, true);
+        void this.setStateChangedAsync("automation.pv.lastAction", `Standby timer scheduled: ${status}`, true);
+    }
+    async applyPvCurrent(ref, current, reason) {
+        const settings = this.connectorSettings.get(connectorKey(ref.chargePointId, ref.connectorId));
+        if (!settings || settings.maxCurrent === current) {
+            return;
+        }
+        const normalizedCurrent = normalizeCurrent(current);
+        const changed = { ...settings, maxCurrent: normalizedCurrent };
+        await this.api?.setConnectorSettings(changed);
+        this.connectorSettings.set(connectorKey(ref.chargePointId, ref.connectorId), changed);
+        const ids = this.connectorObjectIds(ref);
+        if (ids) {
+            await this.setStateChangedAsync(`chargepoints.${ids.cpId}.connectors.${ids.connectorId}.settings.maxCurrent`, normalizedCurrent, true);
+        }
+        await this.setStateChangedAsync("automation.pv.lastAction", `Set current to ${normalizedCurrent} A (${reason})`, true);
+    }
+    async applyPvStandby(ref, reason) {
+        const settings = this.connectorSettings.get(connectorKey(ref.chargePointId, ref.connectorId));
+        if (!settings) {
+            return;
+        }
+        const changed = { ...settings, mode: "Off" };
+        await this.api?.setConnectorSettings(changed);
+        this.connectorSettings.set(connectorKey(ref.chargePointId, ref.connectorId), changed);
+        const ids = this.connectorObjectIds(ref);
+        if (ids) {
+            await this.setStateChangedAsync(`chargepoints.${ids.cpId}.connectors.${ids.connectorId}.settings.mode`, "Off", true);
+        }
+        await this.setStateChangedAsync("automation.pv.completionPending", false, true);
+        await this.setStateChangedAsync("automation.pv.lastAction", `Set wallbox to standby (${reason})`, true);
+        await this.poll();
+    }
+    connectorObjectIds(ref) {
+        const cpId = objectId(ref.chargePointId);
+        const connectorId = objectId(String(ref.connectorId));
+        return this.connectorIds.has(`${cpId}.${connectorId}`) ? { cpId, connectorId } : undefined;
+    }
+    clearPvTimers() {
+        this.clearPvStartTimer();
+        this.clearPvStopTimer();
+        this.clearPvCompletionTimer();
+    }
+    clearPvStartTimer() {
+        if (this.pvStartTimer) {
+            this.clearTimeout(this.pvStartTimer);
+            this.pvStartTimer = undefined;
+        }
+        void this.setStateChangedAsync("automation.pv.startPending", false, true);
+    }
+    clearPvStopTimer() {
+        if (this.pvStopTimer) {
+            this.clearTimeout(this.pvStopTimer);
+            this.pvStopTimer = undefined;
+        }
+        void this.setStateChangedAsync("automation.pv.stopPending", false, true);
+    }
+    clearPvCompletionTimer() {
+        if (this.pvCompletionTimer) {
+            this.clearTimeout(this.pvCompletionTimer);
+            this.pvCompletionTimer = undefined;
+        }
+        void this.setStateChangedAsync("automation.pv.completionPending", false, true);
+    }
+    isChargingComplete(status) {
+        return status === "Finishing" || status === "SuspendedEV";
     }
     async handleSetting(relativeId, value) {
         const parts = relativeId.split(".");
@@ -450,7 +754,7 @@ class ChargeampsHalo extends utils.Adapter {
                 if (!Number.isFinite(maxCurrent)) {
                     throw new Error(`Invalid maxCurrent value: ${String(value)}`);
                 }
-                changed.maxCurrent = maxCurrent;
+                changed.maxCurrent = normalizeCurrent(maxCurrent);
             }
         }
         await this.api?.setConnectorSettings(changed);
@@ -469,6 +773,19 @@ function connectorKey(chargePointId, connectorId) {
 }
 function escapeRegExp(value) {
     return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+function pvNumber(value, fallback) {
+    const number = Number(value);
+    return Number.isFinite(number) ? number : fallback;
+}
+function clamp(value, min, max) {
+    return Math.min(Math.max(value, min), max);
+}
+function normalizeCurrent(value) {
+    if (!Number.isFinite(value)) {
+        throw new Error(`Invalid maxCurrent value: ${String(value)}`);
+    }
+    return Math.trunc(value);
 }
 function rfidLength(rfid, format, configuredLength) {
     const normalizedFormat = (format || "Hex").toLowerCase();
