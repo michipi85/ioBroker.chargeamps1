@@ -1,11 +1,12 @@
 {
+  "i18n": true,
   "type": "panel",
   "items": {
     "Account settings": {
-     "type": "header",
-     "text": "Account settings",
-     "size": 2,
-     "newLine": true
+      "type": "header",
+      "text": "Account settings",
+      "size": 2,
+      "newLine": true
     },
     "email": {
       "type": "text",
@@ -148,15 +149,15 @@
       "xl": 4
     },
     "pvGridPowerState": {
-      "type": "text",
+      "type": "objectId",
       "label": "Grid power state ID",
       "help": "State with current grid power in W. By default negative values mean feed-in/export.",
       "newLine": true,
       "xs": 12,
-      "sm": 12,
-      "md": 12,
-      "lg": 8,
-      "xl": 8
+      "sm": 4,
+      "md": 4,
+      "lg": 4,
+      "xl": 4
     },
     "pvGridPowerExportIsNegative": {
       "type": "checkbox",
@@ -164,15 +165,15 @@
       "newLine": true
     },
     "pvBatterySocState": {
-      "type": "text",
+      "type": "objectId",
       "label": "Battery SOC state ID",
       "help": "Optional state with battery state of charge in percent.",
       "newLine": true,
       "xs": 12,
-      "sm": 12,
-      "md": 12,
-      "lg": 8,
-      "xl": 8
+      "sm": 4,
+      "md": 4,
+      "lg": 4,
+      "xl": 4
     },
     "pvMinBatterySoc": {
       "type": "number",
@@ -180,41 +181,43 @@
       "min": 0,
       "max": 100,
       "xs": 12,
-      "sm": 12,
-      "md": 8,
-      "lg": 4,
-      "xl": 4
+      "sm": 2,
+      "md": 2,
+      "lg": 2,
+      "xl": 2
     },
     "pvMinCurrent": {
       "type": "number",
       "label": "Minimum current in A",
-      "min": 1,
+      "min": 6,
+      "max": 32,
       "newLine": true,
       "xs": 12,
-      "sm": 12,
-      "md": 8,
-      "lg": 4,
-      "xl": 4
+      "sm": 2,
+      "md": 2,
+      "lg": 2,
+      "xl": 2
     },
     "pvMaxCurrent": {
       "type": "number",
       "label": "Maximum current in A",
-      "min": 1,
+      "min": 6,
+      "max": 32,
       "xs": 12,
-      "sm": 12,
-      "md": 8,
-      "lg": 4,
-      "xl": 4
+      "sm": 2,
+      "md": 2,
+      "lg": 2,
+      "xl": 2
     },
     "pvVoltage": {
       "type": "number",
       "label": "Voltage per phase",
       "min": 1,
       "xs": 12,
-      "sm": 12,
-      "md": 8,
-      "lg": 4,
-      "xl": 4
+      "sm": 2,
+      "md": 2,
+      "lg": 2,
+      "xl": 2
     },
     "pvPhases": {
       "type": "number",
@@ -222,10 +225,10 @@
       "min": 1,
       "max": 3,
       "xs": 12,
-      "sm": 12,
-      "md": 8,
-      "lg": 4,
-      "xl": 4
+      "sm": 2,
+      "md": 2,
+      "lg": 2,
+      "xl": 2
     },
     "pvStartSurplusWatts": {
       "type": "number",
@@ -233,20 +236,20 @@
       "help": "PV automation switches the connector on after this surplus is stable for the start delay.",
       "newLine": true,
       "xs": 12,
-      "sm": 12,
-      "md": 8,
-      "lg": 4,
-      "xl": 4
+      "sm": 2,
+      "md": 2,
+      "lg": 2,
+      "xl": 2
     },
     "pvStopSurplusWatts": {
       "type": "number",
       "label": "Stop surplus in W",
       "help": "PV automation switches the connector to standby when surplus is at or below this value for the stop delay.",
       "xs": 12,
-      "sm": 12,
-      "md": 8,
-      "lg": 4,
-      "xl": 4
+      "sm": 2,
+      "md": 2,
+      "lg": 2,
+      "xl": 2
     },
     "pvStartDelaySeconds": {
       "type": "number",
@@ -254,20 +257,20 @@
       "min": 0,
       "newLine": true,
       "xs": 12,
-      "sm": 12,
-      "md": 8,
-      "lg": 4,
-      "xl": 4
+      "sm": 2,
+      "md": 2,
+      "lg": 2,
+      "xl": 2
     },
     "pvStopDelaySeconds": {
       "type": "number",
       "label": "Stop delay in seconds",
       "min": 0,
       "xs": 12,
-      "sm": 12,
-      "md": 8,
-      "lg": 4,
-      "xl": 4
+      "sm": 2,
+      "md": 2,
+      "lg": 2,
+      "xl": 2
     },
     "pvCompletionStandbyDelaySeconds": {
       "type": "number",
@@ -275,10 +278,10 @@
       "help": "When connector status is Finishing or SuspendedEV, the adapter sets mode to Off after this delay.",
       "min": 0,
       "xs": 12,
-      "sm": 12,
-      "md": 8,
-      "lg": 4,
-      "xl": 4
+      "sm": 2,
+      "md": 2,
+      "lg": 2,
+      "xl": 2
     }
   }
 }

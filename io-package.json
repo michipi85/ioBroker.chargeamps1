@@ -1,120 +1,114 @@
 {
-    "common": {
-        "name": "chargeamps1",
-        "version": "0.2.0",
-         "news": {
-            "0.2.0": {
-                "en": "Major update with new features and improvements.",
-                "de": "Große Aktualisierung mit neuen Funktionen und Verbesserungen.",
-                "ru": "Крупное обновление с новыми функциями и улучшениями.",
-                "pt": "Atualização principal com novas funcionalidades e melhorias.",
-                "nl": "Grote update met nieuwe functies en verbeteringen.",
-                "fr": "Mise à jour majeure avec de nouvelles fonctionnalités et améliorations.",
-                "it": "Aggiornamento principale con nuove funzionalità e miglioramenti.",
-                "es": "Actualización principal con nuevas características y mejoras.",
-                "pl": "Główna aktualizacja z nowymi funkcjami i poprawami.",
-                "uk": "Головне оновлення з новими функціями та покращеннями.",
-                "zh-cn": "主要更新，包含新功能和改进。"
-            }
-        },
-        "titleLang": {
-            "en": "ChargeAmps",
-            "de": "Chargeamps",
-            "ru": "Chargeamps",
-            "pt": "Chargeamps",
-            "nl": "Chargeamps",
-            "fr": "Chargée",
-            "it": "Chargeamps",
-            "es": "Cargadores",
-            "pl": "CharGeamps",
-            "uk": "Зарядка",
-            "zh-cn": "费用"
-        },
-        "desc": {
-            "en": "controll ChargeAmps Wallbox API",
-            "de": "Controll Chargeamps Wallbox -API",
-            "ru": "контроль API Wallbox chargeamps",
-            "pt": "Control Chargeamps Wallbox API",
-            "nl": "Control Chargeamps Wallbox API",
-            "fr": "API CORPORD CHARGEAMPS WALDBOX",
-            "it": "Controlla Chargeamps Wallbox API",
-            "es": "API de Wallbox de control de cargadores de control",
-            "pl": "kontrolować API Wallbox Wallbox",
-            "uk": "Контроль API Wallbox API Wallbox",
-            "zh-cn": "控制Chargeamps Wallbox API"
-        },
-        "authors": [
-            "michipi85 <sammer.michael.ms@gmail.com>"
-        ],
-        "keywords": [
-            "charge amps",
-            "wallbox",
-            "halo"
-        ],
-        "licenseInformation": {
-            "type": "free",
-            "license": "MIT"
-        },
-        "platform": "Javascript/Node.js",
-        "icon": "chargeamps.png",
-        "enabled": true,
-        "extIcon": "https://raw.githubusercontent.com/michipi85/ioBroker.chargeamps/main/admin/chargeamps.png",
-        "readme": "https://github.com/michipi85/ioBroker.chargeamps/blob/main/README.md",
-        "loglevel": "info",
-        "tier": 3,
-        "mode": "daemon",
-        "type": "vehicle",
-        "compact": true,
-        "connectionType": "cloud",
-        "dataSource": "poll",
-        "adminUI": {
-            "config": "json",
-            "tab": "materialize"
-        },
-        "dependencies": [
-            {
-                "js-controller": ">=5.0.0"
-            }
-        ],
-        "globalDependencies": [
-            {
-                "admin": ">=6.0.0"
-            }
-        ]
+  "common": {
+    "name": "chargeamps1",
+    "version": "0.2.1",
+    "news": {
+      "0.2.1": {
+        "en": "Minor update with bug fixes and improvements.",
+        "de": "Kleine Aktualisierung mit Bugfixes und Verbesserungen.",
+        "ru": "Малое обновление с исправлениями ошибок и улучшениями.",
+        "pt": "Atualização principal com novas funcionalidades e melhorias.",
+        "nl": "Grote update met nieuwe functies en verbeteringen.",
+        "fr": "Mise à jour majeure avec de nouvelles fonctionnalités et améliorations.",
+        "it": "Aggiornamento principale con nuove funzionalità e miglioramenti.",
+        "es": "Actualización principal con nuevas características y mejoras.",
+        "pl": "Główna aktualizacja z nowymi funkcjami i poprawami.",
+        "uk": "Головне оновлення з новими функціями та покращеннями.",
+        "zh-cn": "主要更新，包含新功能和改进。"
+      }
     },
-    "encryptedNative": ["password","apiKey"],
-    "protectedNative": ["password","apiKey"],
-    "native": {
-		"email": "",
-		"password": "",
-		"apiKey": "",
-	    "apiBaseUrl": "https://eapi.charge.space",
-        "pollInterval": 60,
-        "rfid": "",
-        "rfidFormat": "Hex",
-        "rfidLength": 0,
-        "pvAutomationEnabled": false,
-        "pvChargePointId": "",
-        "pvConnectorId": 1,
-        "pvGridPowerState": "",
-        "pvGridPowerExportIsNegative": true,
-        "pvBatterySocState": "",
-        "pvMinBatterySoc": 20,
-        "pvMinCurrent": 6,
-        "pvMaxCurrent": 16,
-        "pvVoltage": 240,
-        "pvPhases": 3,
-        "pvStartSurplusWatts": 4500,
-        "pvStopSurplusWatts": 500,
-        "pvStartDelaySeconds": 180,
-        "pvStopDelaySeconds": 90,
-        "pvCompletionStandbyDelaySeconds": 60
+    "titleLang": {
+      "en": "ChargeAmps",
+      "de": "Chargeamps",
+      "ru": "Chargeamps",
+      "pt": "Chargeamps",
+      "nl": "Chargeamps",
+      "fr": "Chargée",
+      "it": "Chargeamps",
+      "es": "Cargadores",
+      "pl": "CharGeamps",
+      "uk": "Зарядка",
+      "zh-cn": "费用"
     },
-    "objects": [
+    "desc": {
+      "en": "controll ChargeAmps Wallbox API",
+      "de": "Controll Chargeamps Wallbox -API",
+      "ru": "контроль API Wallbox chargeamps",
+      "pt": "Control Chargeamps Wallbox API",
+      "nl": "Control Chargeamps Wallbox API",
+      "fr": "API CORPORD CHARGEAMPS WALDBOX",
+      "it": "Controlla Chargeamps Wallbox API",
+      "es": "API de Wallbox de control de cargadores de control",
+      "pl": "kontrolować API Wallbox Wallbox",
+      "uk": "Контроль API Wallbox API Wallbox",
+      "zh-cn": "控制Chargeamps Wallbox API"
+    },
+    "authors": ["michipi85 <sammer.michael.ms@gmail.com>"],
+    "keywords": ["ioBroker", "charge amps", "wallbox", "halo"],
+    "licenseInformation": {
+      "type": "free",
+      "license": "MIT"
+    },
+    "platform": "Javascript/Node.js",
+    "icon": "chargeamps.png",
+    "enabled": true,
+    "extIcon": "https://raw.githubusercontent.com/michipi85/ioBroker.chargeamps/main/admin/chargeamps.png",
+    "readme": "https://github.com/michipi85/ioBroker.chargeamps/blob/main/README.md",
+    "loglevel": "info",
+    "tier": 3,
+    "mode": "daemon",
+    "type": "vehicle",
+    "compact": true,
+    "connectionType": "cloud",
+    "dataSource": "poll",
+    "adminUI": {
+      "config": "json",
+      "tab": "materialize"
+    },
+    "dependencies": [
+      {
+        "js-controller": ">=5.0.19"
+      }
+    ],
+    "globalDependencies": [
+      {
+        "admin": ">=6.6.0"
+      }
+    ]
+  },
+  "encryptedNative": ["password", "apiKey"],
+  "protectedNative": ["password", "apiKey"],
+  "native": {
+    "email": "",
+    "password": "",
+    "apiKey": "",
+    "apiBaseUrl": "https://eapi.charge.space",
+    "pollInterval": 60,
+    "rfid": "",
+    "rfidFormat": "Hex",
+    "rfidLength": 0,
+    "pvAutomationEnabled": false,
+    "pvChargePointId": "",
+    "pvConnectorId": 1,
+    "pvGridPowerState": "",
+    "pvGridPowerExportIsNegative": true,
+    "pvBatterySocState": "",
+    "pvMinBatterySoc": 20,
+    "pvMinCurrent": 6,
+    "pvMaxCurrent": 16,
+    "pvVoltage": 240,
+    "pvPhases": 3,
+    "pvStartSurplusWatts": 4500,
+    "pvStopSurplusWatts": 500,
+    "pvStartDelaySeconds": 180,
+    "pvStopDelaySeconds": 90,
+    "pvCompletionStandbyDelaySeconds": 60
+  },
+  "objects": [
     {
-     "_id": "info.connection",
-     "type": "state",
-     "common": {
+      "_id": "info.connection",
+      "type": "state",
+      "common": {
         "name": "Connected",
         "type": "boolean",
         "role": "indicator.connected",
@@ -122,9 +116,8 @@
         "write": false,
         "def": false
       },
-    "native": {}
-      }
-    ],
-    "instanceObjects": []
-
+      "native": {}
+    }
+  ],
+  "instanceObjects": []
 }
