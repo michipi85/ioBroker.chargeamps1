@@ -1,9 +1,9 @@
 {
   "common": {
     "name": "chargeamps1",
-    "version": "0.2.1",
+    "version": "0.2.2",
     "news": {
-      "0.2.1": {
+      "0.2.2": {
         "en": "Minor update with bug fixes and improvements.",
         "de": "Kleine Aktualisierung mit Bugfixes und Verbesserungen.",
         "ru": "Малое обновление с исправлениями ошибок и улучшениями.",
