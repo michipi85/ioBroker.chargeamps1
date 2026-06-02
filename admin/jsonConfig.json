@@ -1,287 +1,290 @@
 {
   "i18n": true,
-  "type": "panel",
+  "type": "tabs",
+  "tabsStyle": {
+    "width": "calc(100% - 100px)"
+  },
   "items": {
-    "Account settings": {
-      "type": "header",
-      "text": "Account settings",
-      "size": 2,
-      "newLine": true
-    },
-    "email": {
-      "type": "text",
-      "label": "Charge Amps email",
-      "newLine": true,
-      "xs": 12,
-      "sm": 12,
-      "md": 12,
-      "lg": 12,
-      "xl": 12
-    },
-    "password": {
-      "type": "password",
-      "label": "Charge Amps password",
-      "newLine": true,
-      "xs": 12,
-      "sm": 12,
-      "md": 8,
-      "lg": 3,
-      "xl": 3
-    },
-    "apiKey": {
-      "type": "password",
-      "label": "External API key",
-      "xs": 12,
-      "sm": 12,
-      "md": 8,
-      "lg": 3,
-      "xl": 3
-    },
-
-    "Api settings": {
-      "type": "header",
-      "text": "Api settings",
-      "size": 2,
-      "newLine": true
-    },
-
-    "apiBaseUrl": {
-      "type": "text",
-      "label": "API base URL",
-      "newLine": true,
-      "xs": 12,
-      "sm": 12,
-      "md": 8,
-      "lg": 3,
-      "xl": 3
-    },
-    "pollInterval": {
-      "type": "number",
-      "label": "Poll interval in seconds",
-      "min": 30,
-      "xs": 12,
-      "sm": 12,
-      "md": 8,
-      "lg": 3,
-      "xl": 3
-    },
-
-    "RFID settings": {
-      "type": "header",
-      "text": "RFID settings (for remote start)",
-      "size": 2,
-      "newLine": true,
-      "xs": 12,
-      "sm": 12,
-      "md": 8,
-      "lg": 4,
-      "xl": 4
-    },
-
-    "rfid": {
-      "type": "text",
-      "label": "RFID for remote start",
-      "newLine": true
-    },
-    "rfidFormat": {
-      "type": "select",
-      "label": "RFID format",
-      "options": [
-        {
-          "label": "Hex",
-          "value": "Hex"
+    "tab_1": {
+      "type": "panel",
+      "label": "Account settings",
+      "items": {
+        "email": {
+          "type": "text",
+          "label": "Charge Amps email",
+          "newLine": true,
+          "xs": 12,
+          "sm": 12,
+          "md": 12,
+          "lg": 12,
+          "xl": 12
         },
-        {
-          "label": "Decimal",
-          "value": "Decimal"
+        "password": {
+          "type": "password",
+          "label": "Charge Amps password",
+          "newLine": true,
+          "xs": 12,
+          "sm": 12,
+          "md": 8,
+          "lg": 3,
+          "xl": 3
+        },
+        "apiKey": {
+          "type": "password",
+          "label": "External API key",
+          "xs": 12,
+          "sm": 12,
+          "md": 8,
+          "lg": 3,
+          "xl": 3
+        },
+
+        "Api settings": {
+          "type": "header",
+          "text": "Api settings",
+          "size": 2,
+          "newLine": true
+        },
+
+        "apiBaseUrl": {
+          "type": "text",
+          "label": "API base URL",
+          "newLine": true,
+          "xs": 12,
+          "sm": 12,
+          "md": 8,
+          "lg": 3,
+          "xl": 3
+        },
+        "pollInterval": {
+          "type": "number",
+          "label": "Poll interval in seconds",
+          "min": 30,
+          "xs": 12,
+          "sm": 12,
+          "md": 8,
+          "lg": 3,
+          "xl": 3
+        },
+
+        "RFID settings": {
+          "type": "header",
+          "text": "RFID settings (for remote start)",
+          "size": 2,
+          "newLine": true,
+          "xs": 12,
+          "sm": 12,
+          "md": 8,
+          "lg": 4,
+          "xl": 4
+        },
+
+        "rfid": {
+          "type": "text",
+          "label": "RFID for remote start",
+          "newLine": true
+        },
+        "rfidFormat": {
+          "type": "select",
+          "label": "RFID format",
+          "options": [
+            {
+              "label": "Hex",
+              "value": "Hex"
+            },
+            {
+              "label": "Decimal",
+              "value": "Decimal"
+            }
+          ],
+          "newLine": true,
+          "xs": 12,
+          "sm": 12,
+          "md": 8,
+          "lg": 4,
+          "xl": 4
+        },
+        "rfidLength": {
+          "type": "number",
+          "label": "RFID length (HEX: bytes, Decimal: digits)",
+          "help": "For HEX values, enter the byte length, e.g. 4 for an 8-character HEX RFID. Leave 0 to calculate automatically.",
+          "min": 0,
+          "xs": 12,
+          "sm": 12,
+          "md": 8,
+          "lg": 4,
+          "xl": 4
         }
-      ],
-      "newLine": true,
-      "xs": 12,
-      "sm": 12,
-      "md": 8,
-      "lg": 4,
-      "xl": 4
-    },
-    "rfidLength": {
-      "type": "number",
-      "label": "RFID length (HEX: bytes, Decimal: digits)",
-      "help": "For HEX values, enter the byte length, e.g. 4 for an 8-character HEX RFID. Leave 0 to calculate automatically.",
-      "min": 0,
-      "xs": 12,
-      "sm": 12,
-      "md": 8,
-      "lg": 4,
-      "xl": 4
+      }
     },
 
-    "PV automation": {
-      "type": "header",
-      "text": "PV automation",
-      "size": 2,
-      "newLine": true
-    },
-    "pvAutomationEnabled": {
-      "type": "checkbox",
-      "label": "Enable PV automation",
-      "help": "Creates automation states and allows the adapter to control connector mode and maximum current from PV surplus.",
-      "newLine": true
-    },
-    "pvChargePointId": {
-      "type": "text",
-      "label": "Charge point ID",
-      "help": "Optional. Leave empty if this adapter has only one connector.",
-      "newLine": true,
-      "xs": 12,
-      "sm": 12,
-      "md": 8,
-      "lg": 4,
-      "xl": 4
-    },
-    "pvConnectorId": {
-      "type": "number",
-      "label": "Connector ID",
-      "min": 1,
-      "xs": 12,
-      "sm": 12,
-      "md": 8,
-      "lg": 4,
-      "xl": 4
-    },
-    "pvGridPowerState": {
-      "type": "objectId",
-      "label": "Grid power state ID",
-      "help": "State with current grid power in W. By default negative values mean feed-in/export.",
-      "newLine": true,
-      "xs": 12,
-      "sm": 4,
-      "md": 4,
-      "lg": 4,
-      "xl": 4
-    },
-    "pvGridPowerExportIsNegative": {
-      "type": "checkbox",
-      "label": "Negative grid power means feed-in",
-      "newLine": true
-    },
-    "pvBatterySocState": {
-      "type": "objectId",
-      "label": "Battery SOC state ID",
-      "help": "Optional state with battery state of charge in percent.",
-      "newLine": true,
-      "xs": 12,
-      "sm": 4,
-      "md": 4,
-      "lg": 4,
-      "xl": 4
-    },
-    "pvMinBatterySoc": {
-      "type": "number",
-      "label": "Minimum battery SOC in %",
-      "min": 0,
-      "max": 100,
-      "xs": 12,
-      "sm": 2,
-      "md": 2,
-      "lg": 2,
-      "xl": 2
-    },
-    "pvMinCurrent": {
-      "type": "number",
-      "label": "Minimum current in A",
-      "min": 6,
-      "max": 32,
-      "newLine": true,
-      "xs": 12,
-      "sm": 2,
-      "md": 2,
-      "lg": 2,
-      "xl": 2
-    },
-    "pvMaxCurrent": {
-      "type": "number",
-      "label": "Maximum current in A",
-      "min": 6,
-      "max": 32,
-      "xs": 12,
-      "sm": 2,
-      "md": 2,
-      "lg": 2,
-      "xl": 2
-    },
-    "pvVoltage": {
-      "type": "number",
-      "label": "Voltage per phase",
-      "min": 1,
-      "xs": 12,
-      "sm": 2,
-      "md": 2,
-      "lg": 2,
-      "xl": 2
-    },
-    "pvPhases": {
-      "type": "number",
-      "label": "Number of phases",
-      "min": 1,
-      "max": 3,
-      "xs": 12,
-      "sm": 2,
-      "md": 2,
-      "lg": 2,
-      "xl": 2
-    },
-    "pvStartSurplusWatts": {
-      "type": "number",
-      "label": "Start surplus in W",
-      "help": "PV automation switches the connector on after this surplus is stable for the start delay.",
-      "newLine": true,
-      "xs": 12,
-      "sm": 2,
-      "md": 2,
-      "lg": 2,
-      "xl": 2
-    },
-    "pvStopSurplusWatts": {
-      "type": "number",
-      "label": "Stop surplus in W",
-      "help": "PV automation switches the connector to standby when surplus is at or below this value for the stop delay.",
-      "xs": 12,
-      "sm": 2,
-      "md": 2,
-      "lg": 2,
-      "xl": 2
-    },
-    "pvStartDelaySeconds": {
-      "type": "number",
-      "label": "Start delay in seconds",
-      "min": 0,
-      "newLine": true,
-      "xs": 12,
-      "sm": 2,
-      "md": 2,
-      "lg": 2,
-      "xl": 2
-    },
-    "pvStopDelaySeconds": {
-      "type": "number",
-      "label": "Stop delay in seconds",
-      "min": 0,
-      "xs": 12,
-      "sm": 2,
-      "md": 2,
-      "lg": 2,
-      "xl": 2
-    },
-    "pvCompletionStandbyDelaySeconds": {
-      "type": "number",
-      "label": "Standby delay after completed charging in seconds",
-      "help": "When connector status is Finishing or SuspendedEV, the adapter sets mode to Off after this delay.",
-      "min": 0,
-      "xs": 12,
-      "sm": 2,
-      "md": 2,
-      "lg": 2,
-      "xl": 2
+    "tab_2": {
+      "type": "panel",
+      "label": "PV automation",
+      "items": {
+        "pvAutomationEnabled": {
+          "type": "checkbox",
+          "label": "Enable PV automation",
+          "help": "Creates automation states and allows the adapter to control connector mode and maximum current from PV surplus.",
+          "newLine": true
+        },
+        "pvChargePointId": {
+          "type": "text",
+          "label": "Charge point ID",
+          "help": "Optional. Leave empty if this adapter has only one connector.",
+          "newLine": true,
+          "xs": 12,
+          "sm": 12,
+          "md": 8,
+          "lg": 4,
+          "xl": 4
+        },
+        "pvConnectorId": {
+          "type": "number",
+          "label": "Connector ID",
+          "min": 1,
+          "xs": 12,
+          "sm": 4,
+          "md": 4,
+          "lg": 2,
+          "xl": 2
+        },
+        "pvGridPowerState": {
+          "type": "objectId",
+          "label": "Grid power state ID",
+          "help": "State with current grid power in W. By default negative values mean feed-in/export.",
+          "newLine": true,
+          "xs": 12,
+          "sm": 12,
+          "md": 4,
+          "lg": 4,
+          "xl": 4
+        },
+        "pvGridPowerExportIsNegative": {
+          "type": "checkbox",
+          "label": "Negative grid power means feed-in",
+          "newLine": true
+        },
+        "pvBatterySocState": {
+          "type": "objectId",
+          "label": "Battery SOC state ID",
+          "help": "Optional state with battery state of charge in percent.",
+          "newLine": true,
+          "xs": 12,
+          "sm": 4,
+          "md": 4,
+          "lg": 4,
+          "xl": 4
+        },
+        "pvMinBatterySoc": {
+          "type": "number",
+          "label": "Minimum battery SOC in %",
+          "min": 0,
+          "max": 100,
+          "xs": 12,
+          "sm": 2,
+          "md": 2,
+          "lg": 2,
+          "xl": 2
+        },
+        "pvMinCurrent": {
+          "type": "number",
+          "label": "Minimum current in A",
+          "min": 6,
+          "max": 32,
+          "newLine": true,
+          "xs": 12,
+          "sm": 3,
+          "md": 3,
+          "lg": 3,
+          "xl": 3
+        },
+        "pvMaxCurrent": {
+          "type": "number",
+          "label": "Maximum current in A",
+          "min": 6,
+          "max": 32,
+          "xs": 12,
+          "sm": 3,
+          "md": 3,
+          "lg": 3,
+          "xl": 3
+        },
+        "pvVoltage": {
+          "type": "number",
+          "label": "Voltage per phase",
+          "min": 1,
+          "xs": 12,
+          "sm": 3,
+          "md": 3,
+          "lg": 3,
+          "xl": 3
+        },
+        "pvPhases": {
+          "type": "number",
+          "label": "Number of phases",
+          "min": 1,
+          "max": 3,
+          "xs": 12,
+          "sm": 3,
+          "md": 3,
+          "lg": 3,
+          "xl": 3
+        },
+        "pvStartSurplusWatts": {
+          "type": "number",
+          "label": "Start surplus in W",
+          "help": "PV automation switches the connector on after this surplus is stable for the start delay.",
+          "newLine": true,
+          "xs": 12,
+          "sm": 3,
+          "md": 3,
+          "lg": 3,
+          "xl": 3
+        },
+        "pvStopSurplusWatts": {
+          "type": "number",
+          "label": "Stop surplus in W",
+          "help": "PV automation switches the connector to standby when surplus is at or below this value for the stop delay.",
+          "xs": 12,
+          "sm": 3,
+          "md": 3,
+          "lg": 3,
+          "xl": 3
+        },
+        "pvStartDelaySeconds": {
+          "type": "number",
+          "label": "Start delay in seconds",
+          "min": 0,
+          "newLine": true,
+          "xs": 12,
+          "sm": 3,
+          "md": 3,
+          "lg": 3,
+          "xl": 3
+        },
+        "pvStopDelaySeconds": {
+          "type": "number",
+          "label": "Stop delay in seconds",
+          "min": 0,
+          "xs": 12,
+          "sm": 3,
+          "md": 3,
+          "lg": 3,
+          "xl": 3
+        },
+        "pvCompletionStandbyDelaySeconds": {
+          "type": "number",
+          "label": "Standby delay after completed charging in seconds",
+          "help": "When connector status is Finishing or SuspendedEV, the adapter sets mode to Off after this delay.",
+          "min": 0,
+          "xs": 12,
+          "sm": 3,
+          "md": 3,
+          "lg": 3,
+          "xl": 3
+        }
+      }
     }
   }
 }

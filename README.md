@@ -92,6 +92,15 @@ When charging is completed (`Finishing`) or ended by the car (`SuspendedEV`), th
 
 ### **WORK IN PROGRESS**
 
+### v0.2.4 (2026-06-02)
+
+- update translation
+
+### v0.2.4 (2026-06-02)
+
+- bug fix PV surplus
+- adapt jsonConfig
+
 ### v0.2.0 (2026-05-31)
 
 - implement PV surplus
