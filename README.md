@@ -31,7 +31,7 @@ Create an instance of the adapter and configure:
 
 ### PV automation
 
-The PV automation is optional and disabled by default. It controls the configured connector by writing `maxCurrent` and by using `remoteStart` / `remoteStop`. It does not switch the wallbox mode to `Off`.
+The PV automation is optional and disabled by default. It controls the configured connector by writing `maxCurrent` and by using `remoteStart` / `remoteStop`. When the automation is active, the adapter first switches the connector mode to `On` if the wallbox is in standby. It does not use `mode = Off` for normal PV pauses.
 
 - `pvAutomationEnabled`: enables the feature in the adapter configuration
 - `automation.pv.enabled`: runtime switch in the object tree
@@ -46,7 +46,7 @@ The PV automation is optional and disabled by default. It controls the configure
 - `pvStartDelaySeconds` / `pvStopDelaySeconds`: debounce delays before changing mode
 - `pvCompletionStandbyDelaySeconds`: delay before switching the wallbox to standby after connector status `Finishing` or `SuspendedEV`
 
-With the default values, the automation expects negative grid power for feed-in, starts the charging session after stable surplus of 4500 W, pauses it when surplus drops to 500 W or less, and regulates between 6 A and 16 A. Because Charge Amps requires RFID for `remoteStart`, configure RFID when PV automation should be able to resume charging automatically.
+With the default values, the automation expects negative grid power for feed-in, starts the charging session after stable surplus of 4500 W, pauses it when surplus drops to 500 W or less, and regulates between 6 A and 16 A. Because Charge Amps requires RFID for `remoteStart`, configure RFID when PV automation should be able to resume charging automatically. Without RFID, the adapter can switch the wallbox to `On` and pause with `remoteStop`, but automatic resume with `remoteStart` is skipped.
 When charging is completed (`Finishing`) or ended by the car (`SuspendedEV`), the automation sets `settings.mode` to `Off` after the configured standby delay.
 
 ## Funktion

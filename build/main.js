@@ -418,16 +418,8 @@ class ChargeampsHalo extends utils.Adapter {
         if (!ref) {
             return;
         }
-        const key = connectorKey(ref.chargePointId, ref.connectorId);
-        const settings = this.connectorSettings.get(key);
-        if (!settings) {
-            return;
-        }
-        const changed = { ...settings, mode };
-        await this.api?.setConnectorSettings(changed);
-        this.connectorSettings.set(key, changed);
         const parts = relativeId.split(".");
-        await this.setStateChangedAsync(`chargepoints.${parts[1]}.connectors.${parts[3]}.settings.mode`, mode, true);
+        await this.setConnectorMode(ref, mode, `command ${parts[5]}`);
     }
     async handleRemoteStart(relativeId) {
         const ref = this.resolveConnector(relativeId);
@@ -439,14 +431,17 @@ class ChargeampsHalo extends utils.Adapter {
     async remoteStartConnector(ref) {
         if (!this.config.rfid) {
             this.log.warn("Remote start was skipped because the Charge Amps API requires an RFID for this command.");
-            return;
+            await this.setStateChangedAsync("automation.pv.lastAction", "Remote start skipped: missing RFID", true);
+            return false;
         }
+        await this.ensureConnectorOn(ref, "before remoteStart");
         await this.api?.remoteStart(ref.chargePointId, ref.connectorId, {
             rfid: this.config.rfid,
             rfidFormat: this.config.rfidFormat || "Hex",
             rfidLength: rfidLength(this.config.rfid, this.config.rfidFormat, Number(this.config.rfidLength)),
             externalTransactionId: `iobroker-${Date.now()}`,
         });
+        return true;
     }
     async handleRemoteStop(relativeId) {
         const ref = this.resolveConnector(relativeId);
@@ -456,6 +451,28 @@ class ChargeampsHalo extends utils.Adapter {
     }
     async remoteStopConnector(ref) {
         await this.api?.remoteStop(ref.chargePointId, ref.connectorId);
+    }
+    async ensureConnectorOn(ref, reason) {
+        const settings = this.connectorSettings.get(connectorKey(ref.chargePointId, ref.connectorId));
+        if (settings?.mode === "On") {
+            return;
+        }
+        await this.setConnectorMode(ref, "On", reason);
+    }
+    async setConnectorMode(ref, mode, reason) {
+        const key = connectorKey(ref.chargePointId, ref.connectorId);
+        const settings = this.connectorSettings.get(key);
+        if (!settings) {
+            throw new Error(`Connector settings for ${key} are not available yet`);
+        }
+        const changed = { ...settings, mode };
+        await this.api?.setConnectorSettings(changed);
+        this.connectorSettings.set(key, changed);
+        const ids = this.connectorObjectIds(ref);
+        if (ids) {
+            await this.setStateChangedAsync(`chargepoints.${ids.cpId}.connectors.${ids.connectorId}.settings.mode`, mode, true);
+        }
+        await this.setStateChangedAsync("automation.pv.lastAction", `Set mode ${mode} (${reason})`, true);
     }
     isPvAutomationSourceState(id) {
         return [this.config.pvGridPowerState, this.config.pvBatterySocState]
@@ -497,6 +514,7 @@ class ChargeampsHalo extends utils.Adapter {
                 return;
             }
             this.clearPvCompletionTimer();
+            await this.ensureConnectorOn(ref, "PV automation active");
             if (state.surplusPower >= startSurplus && socOk) {
                 this.clearPvStopTimer();
                 await this.applyPvCurrent(ref, state.calculatedCurrent, reason);
@@ -602,8 +620,10 @@ class ChargeampsHalo extends utils.Adapter {
                 const freshRef = this.resolvePvConnector() || ref;
                 const freshCurrent = state.calculatedCurrent || current;
                 await this.applyPvCurrent(freshRef, freshCurrent, "PV surplus stable");
-                await this.remoteStartConnector(freshRef);
-                await this.setStateChangedAsync("automation.pv.lastAction", `Remote start with ${freshCurrent} A (PV surplus stable)`, true);
+                const started = await this.remoteStartConnector(freshRef);
+                await this.setStateChangedAsync("automation.pv.lastAction", started
+                    ? `Remote start with ${freshCurrent} A (PV surplus stable)`
+                    : `Remote start skipped with ${freshCurrent} A (missing RFID)`, true);
                 await this.setStateChangedAsync("automation.pv.startPending", false, true);
                 await this.poll();
             })();

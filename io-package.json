@@ -1,9 +1,9 @@
 {
   "common": {
     "name": "chargeamps1",
-    "version": "0.2.2",
+    "version": "0.2.3",
     "news": {
-      "0.2.2": {
+      "0.2.3": {
         "en": "Minor update with bug fixes and improvements.",
         "de": "Kleine Aktualisierung mit Bugfixes und Verbesserungen.",
         "ru": "Малое обновление с исправлениями ошибок и улучшениями.",
@@ -43,15 +43,8 @@
       "uk": "Контроль API Wallbox API Wallbox",
       "zh-cn": "控制Chargeamps Wallbox API"
     },
-    "authors": [
-      "michipi85 <sammer.michael.ms@gmail.com>"
-    ],
-    "keywords": [
-      "ioBroker",
-      "charge amps",
-      "wallbox",
-      "halo"
-    ],
+    "authors": ["michipi85 <sammer.michael.ms@gmail.com>"],
+    "keywords": ["ioBroker", "charge amps", "wallbox", "halo"],
     "licenseInformation": {
       "type": "free",
       "license": "MIT"
@@ -83,14 +76,8 @@
       }
     ]
   },
-  "encryptedNative": [
-    "password",
-    "apiKey"
-  ],
-  "protectedNative": [
-    "password",
-    "apiKey"
-  ],
+  "encryptedNative": ["password", "apiKey"],
+  "protectedNative": ["password", "apiKey"],
   "native": {
     "email": "",
     "password": "",
