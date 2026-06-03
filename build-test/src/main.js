@@ -389,8 +389,7 @@ class ChargeampsHalo extends utils.Adapter {
                 await this.handleConnectorModeCommand(relativeId, "Schedule");
             }
             else if (relativeId === "automation.pv.enabled") {
-                await this.setStateAsync(relativeId, Boolean(state.val), true);
-                await this.evaluatePvAutomation("enabled changed");
+                await this.handlePvAutomationEnabledChange(Boolean(state.val));
                 return;
             }
             else if (relativeId.includes(".settings.")) {
@@ -412,6 +411,17 @@ class ChargeampsHalo extends utils.Adapter {
         if (chargePointId) {
             await this.api?.reboot(chargePointId);
         }
+    }
+    async handlePvAutomationEnabledChange(enabled) {
+        await this.setStateAsync("automation.pv.enabled", enabled, true);
+        if (enabled) {
+            await this.evaluatePvAutomation("enabled changed");
+            return;
+        }
+        this.clearPvTimers();
+        await this.setStateChangedAsync("automation.pv.active", false, true);
+        await this.setStateChangedAsync("automation.pv.decision", "disabled", true);
+        await this.setStateChangedAsync("automation.pv.lastAction", "PV automation disabled manually", true);
     }
     async handleConnectorModeCommand(relativeId, mode) {
         const ref = this.resolveConnector(relativeId);
@@ -687,6 +697,10 @@ class ChargeampsHalo extends utils.Adapter {
         }
         await this.setStateChangedAsync("automation.pv.completionPending", false, true);
         await this.setStateChangedAsync("automation.pv.lastAction", `Set wallbox to standby (${reason})`, true);
+        await this.setStateAsync("automation.pv.enabled", false, true);
+        await this.setStateChangedAsync("automation.pv.active", false, true);
+        await this.setStateChangedAsync("automation.pv.decision", "charging completed, automation disabled", true);
+        this.clearPvTimers();
         await this.poll();
     }
     connectorObjectIds(ref) {

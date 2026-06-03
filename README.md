@@ -34,7 +34,7 @@ Create an instance of the adapter and configure:
 The PV automation is optional and disabled by default. It controls the configured connector by writing `maxCurrent` and by using `remoteStart` / `remoteStop`. When the automation is active, the adapter first switches the connector mode to `On` if the wallbox is in standby. It does not use `mode = Off` for normal PV pauses.
 
 - `pvAutomationEnabled`: enables the feature in the adapter configuration
-- `automation.pv.enabled`: runtime switch in the object tree
+- `automation.pv.enabled`: runtime switch in the object tree. Disabling this switch manually only stops the automation and does not switch the wallbox to standby.
 - `pvGridPowerState`: external state with grid power in W
 - `pvGridPowerExportIsNegative`: enabled when negative grid power means feed-in/export
 - `pvBatterySocState`: optional external state with battery SOC in %
@@ -47,7 +47,7 @@ The PV automation is optional and disabled by default. It controls the configure
 - `pvCompletionStandbyDelaySeconds`: delay before switching the wallbox to standby after connector status `Finishing` or `SuspendedEV`
 
 With the default values, the automation expects negative grid power for feed-in, starts the charging session after stable surplus of 4500 W, pauses it when surplus drops to 500 W or less, and regulates between 6 A and 16 A. Because Charge Amps requires RFID for `remoteStart`, configure RFID when PV automation should be able to resume charging automatically. Without RFID, the adapter can switch the wallbox to `On` and pause with `remoteStop`, but automatic resume with `remoteStart` is skipped.
-When charging is completed (`Finishing`) or ended by the car (`SuspendedEV`), the automation sets `settings.mode` to `Off` after the configured standby delay.
+When charging is completed (`Finishing`) or ended by the car (`SuspendedEV`), the automation sets `settings.mode` to `Off` after the configured standby delay and then sets `automation.pv.enabled` to `false`. This way, the next PV charging session must be enabled deliberately again.
 
 ## Funktion
 
