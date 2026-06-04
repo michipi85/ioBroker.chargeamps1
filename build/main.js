@@ -518,7 +518,8 @@ class ChargeampsHalo extends adapter_core_1.Adapter {
         }
         this.pvEvaluating = true;
         try {
-            const state = await this.readPvAutomationState();
+            const ref = this.resolvePvConnector();
+            const state = await this.readPvAutomationState(ref);
             await this.publishPvAutomationState(state);
             if (!state.enabled) {
                 this.clearPvTimers();
@@ -526,7 +527,6 @@ class ChargeampsHalo extends adapter_core_1.Adapter {
                 await this.setStateChangedAsync("automation.pv.decision", adapter_core_1.I18n.t("disabled"), true);
                 return;
             }
-            const ref = this.resolvePvConnector();
             if (!ref) {
                 this.clearPvTimers();
                 await this.setStateChangedAsync("automation.pv.active", false, true);
@@ -588,7 +588,7 @@ class ChargeampsHalo extends adapter_core_1.Adapter {
             this.pvEvaluating = false;
         }
     }
-    async readPvAutomationState() {
+    async readPvAutomationState(ref) {
         const enabledState = await this.getStateAsync("automation.pv.enabled");
         const enabled = Boolean(enabledState?.val) && Boolean(this.config.pvAutomationEnabled);
         const gridPowerStateId = this.config.pvGridPowerState?.trim();
@@ -603,7 +603,8 @@ class ChargeampsHalo extends adapter_core_1.Adapter {
         }
         const gridPower = await this.readForeignNumber(gridPowerStateId);
         const exportIsNegative = this.config.pvGridPowerExportIsNegative !== false;
-        const surplusPower = exportIsNegative ? -gridPower : gridPower;
+        const gridSurplusPower = exportIsNegative ? -gridPower : gridPower;
+        const surplusPower = gridSurplusPower + this.currentChargingPowerWatts(ref);
         const batterySocStateId = this.config.pvBatterySocState?.trim();
         const batterySoc = batterySocStateId ? await this.readForeignNumber(batterySocStateId) : null;
         const calculatedCurrent = this.calculatePvCurrent(surplusPower);
@@ -635,6 +636,32 @@ class ChargeampsHalo extends adapter_core_1.Adapter {
         const wattsPerAmp = Math.max(1, pvNumber(this.config.pvVoltage, 240) * pvNumber(this.config.pvPhases, 3));
         return clamp(Math.floor(surplusPower / wattsPerAmp), minCurrent, maxCurrent);
     }
+    currentChargingPowerWatts(ref) {
+        if (!ref) {
+            return 0;
+        }
+        const key = connectorKey(ref.chargePointId, ref.connectorId);
+        const status = this.connectorStatuses.get(key);
+        if (status?.status !== "Charging") {
+            return 0;
+        }
+        const measuredPower = (status.measurements || []).reduce((sum, measurement) => {
+            const current = Number(measurement.current);
+            const voltage = Number(measurement.voltage);
+            return Number.isFinite(current) && Number.isFinite(voltage) && current > 0 && voltage > 0
+                ? sum + current * voltage
+                : sum;
+        }, 0);
+        if (measuredPower > 0) {
+            return measuredPower;
+        }
+        const settings = this.connectorSettings.get(key);
+        const current = Number(settings?.maxCurrent);
+        if (!Number.isFinite(current) || current <= 0) {
+            return 0;
+        }
+        return current * pvNumber(this.config.pvVoltage, 240) * pvNumber(this.config.pvPhases, 3);
+    }
     resolvePvConnector() {
         const connectorId = objectId(String(Number(this.config.pvConnectorId) || 1));
         const configuredChargePointId = this.config.pvChargePointId?.trim();
@@ -654,7 +681,7 @@ class ChargeampsHalo extends adapter_core_1.Adapter {
         this.pvStartTimer = this.setTimeout(() => {
             this.pvStartTimer = undefined;
             void (async () => {
-                const state = await this.readPvAutomationState();
+                const state = await this.readPvAutomationState(ref);
                 const freshRef = this.resolvePvConnector() || ref;
                 const freshCurrent = state.calculatedCurrent || current;
                 await this.applyPvCurrent(freshRef, freshCurrent, "PV surplus stable");
