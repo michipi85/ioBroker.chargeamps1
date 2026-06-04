@@ -59,6 +59,7 @@
   "completion standby pending complete": "Fertigstellungsbereitschaft bis zur Fertigstellung",
   "disabled": "deaktiviert",
   "start pending": "beginnen in der Schwebe",
+  "surplus between start and stop thresholds": "Überschuss zwischen Start- und Stoppschwellen",
   "surplus too low": "Überschuss zu gering",
   "target connector not ready": "Zielanschluss nicht bereit",
   "waiting for battery SOC": "Warten auf den Ladezustand der Batterie",

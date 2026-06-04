@@ -132,6 +132,7 @@ class ChargeampsHalo extends adapter_core_1.Adapter {
                 const base = `chargepoints.${cpId}.connectors.${connectorId}.status`;
                 await this.setStateChangedAsync(`${base}.status`, connectorStatus.status, true);
                 await this.setStateChangedAsync(`${base}.totalConsumptionKwh`, connectorStatus.totalConsumptionKwh, true);
+                await this.updateConsumptionCounters(base, connectorStatus);
                 await this.setStateChangedAsync(`${base}.sessionId`, connectorStatus.sessionId ?? null, true);
                 await this.setStateChangedAsync(`${base}.startTime`, connectorStatus.startTime ?? "", true);
                 await this.setStateChangedAsync(`${base}.endTime`, connectorStatus.endTime ?? "", true);
@@ -157,6 +158,51 @@ class ChargeampsHalo extends adapter_core_1.Adapter {
             await this.setStateChangedAsync(`${base}.${phase}.current`, measurement.current, true);
             await this.setStateChangedAsync(`${base}.${phase}.voltage`, measurement.voltage, true);
         }
+    }
+    async updateConsumptionCounters(statusBase, status) {
+        const totalConsumptionKwh = Number(status.totalConsumptionKwh);
+        if (!Number.isFinite(totalConsumptionKwh) || totalConsumptionKwh < 0) {
+            return;
+        }
+        const now = new Date();
+        const dayKey = formatDayKey(now);
+        const monthKey = dayKey.slice(0, 7);
+        const sessionId = status.sessionId === null || status.sessionId === undefined ? "" : String(status.sessionId);
+        const [storedDay, storedMonth, storedSessionId, storedLastTotal, storedDaily, storedMonthly] = await Promise.all([
+            this.getStateAsync(`${statusBase}.counterDay`),
+            this.getStateAsync(`${statusBase}.counterMonth`),
+            this.getStateAsync(`${statusBase}.counterSessionId`),
+            this.getStateAsync(`${statusBase}.lastCounterTotalConsumptionKwh`),
+            this.getStateAsync(`${statusBase}.dailyConsumptionKwh`),
+            this.getStateAsync(`${statusBase}.monthlyConsumptionKwh`),
+        ]);
+        let dailyConsumption = stateNumber(storedDaily) ?? 0;
+        let monthlyConsumption = stateNumber(storedMonthly) ?? 0;
+        if (storedDay?.val !== dayKey) {
+            dailyConsumption = 0;
+            await this.setStateChangedAsync(`${statusBase}.counterDay`, dayKey, true);
+        }
+        if (storedMonth?.val !== monthKey) {
+            monthlyConsumption = 0;
+            await this.setStateChangedAsync(`${statusBase}.counterMonth`, monthKey, true);
+        }
+        const previousTotal = stateNumber(storedLastTotal);
+        let delta = 0;
+        if (previousTotal !== null) {
+            delta = totalConsumptionKwh - previousTotal;
+            if (delta < 0) {
+                const previousSessionId = storedSessionId?.val === null || storedSessionId?.val === undefined ? "" : String(storedSessionId.val);
+                delta = sessionId && previousSessionId && sessionId !== previousSessionId ? totalConsumptionKwh : 0;
+            }
+        }
+        if (delta > 0) {
+            dailyConsumption += delta;
+            monthlyConsumption += delta;
+        }
+        await this.setStateChangedAsync(`${statusBase}.dailyConsumptionKwh`, roundKwh(dailyConsumption), true);
+        await this.setStateChangedAsync(`${statusBase}.monthlyConsumptionKwh`, roundKwh(monthlyConsumption), true);
+        await this.setStateChangedAsync(`${statusBase}.lastCounterTotalConsumptionKwh`, totalConsumptionKwh, true);
+        await this.setStateChangedAsync(`${statusBase}.counterSessionId`, sessionId, true);
     }
     async ensureBaseObjects() {
         await this.extendObjectAsync("info", {
@@ -283,6 +329,12 @@ class ChargeampsHalo extends adapter_core_1.Adapter {
             await this.ensureState(`${base}.status.sessionId`, "Session ID", "number", "value", undefined, false);
             await this.ensureState(`${base}.status.startTime`, "Start time", "string", "date", undefined, false);
             await this.ensureState(`${base}.status.endTime`, "End time", "string", "date", undefined, false);
+            await this.ensureState(`${base}.status.dailyConsumptionKwh`, "Daily consumption", "number", "value.power.consumption", "kWh", false);
+            await this.ensureState(`${base}.status.monthlyConsumptionKwh`, "Monthly consumption", "number", "value.power.consumption", "kWh", false);
+            await this.ensureState(`${base}.status.lastCounterTotalConsumptionKwh`, "Last counter total consumption", "number", "value.power.consumption", "kWh", false);
+            await this.ensureState(`${base}.status.counterDay`, "Counter day", "string", "value", undefined, false);
+            await this.ensureState(`${base}.status.counterMonth`, "Counter month", "string", "value", undefined, false);
+            await this.ensureState(`${base}.status.counterSessionId`, "Counter session ID", "string", "value", undefined, false);
             await this.extendObjectAsync(`${base}.settings`, {
                 type: "channel",
                 common: { name: "Settings" },
@@ -520,8 +572,13 @@ class ChargeampsHalo extends adapter_core_1.Adapter {
                 await this.setStateChangedAsync("automation.pv.decision", socOk ? adapter_core_1.I18n.t("waiting for surplus") : adapter_core_1.I18n.t("waiting for battery SOC"), true);
                 return;
             }
-            this.clearPvTimers();
-            await this.setStateChangedAsync("automation.pv.decision", adapter_core_1.I18n.t("surplus between start and stop thresholds"), true);
+            this.clearPvStartTimer();
+            if (!isCharging) {
+                this.clearPvStopTimer();
+            }
+            await this.setStateChangedAsync("automation.pv.decision", this.pvStopTimer
+                ? `${adapter_core_1.I18n.t("Stop timer scheduled")}: ${adapter_core_1.I18n.t("surplus too low")}`
+                : adapter_core_1.I18n.t("surplus between start and stop thresholds"), true);
         }
         catch (error) {
             this.log.warn(`PV automation failed: ${formatError(error)}`);
@@ -791,6 +848,19 @@ function normalizeCurrent(value) {
         throw new Error(`Invalid maxCurrent value: ${String(value)}`);
     }
     return Math.trunc(value);
+}
+function stateNumber(state) {
+    const value = Number(state?.val);
+    return Number.isFinite(value) ? value : null;
+}
+function roundKwh(value) {
+    return Math.round(value * 1000) / 1000;
+}
+function formatDayKey(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
 }
 function rfidLength(rfid, format, configuredLength) {
     const normalizedFormat = (format || "Hex").toLowerCase();

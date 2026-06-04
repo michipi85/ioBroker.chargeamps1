@@ -59,6 +59,7 @@
   "completion standby pending complete": "завершение в режиме ожидания в ожидании завершения",
   "disabled": "неполноценный",
   "start pending": "начать ожидать",
+  "surplus between start and stop thresholds": "превышение между порогами запуска и остановки",
   "surplus too low": "излишек слишком мал",
   "target connector not ready": "целевой соединитель не готов",
   "waiting for battery SOC": "ждем SOC батареи",

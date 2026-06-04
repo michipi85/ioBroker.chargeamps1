@@ -59,6 +59,7 @@
   "completion standby pending complete": "voltooiing stand-by in afwachting van voltooiing",
   "disabled": "gehandicapt",
   "start pending": "beginnen in afwachting",
+  "surplus between start and stop thresholds": "overschot tussen start- en stopdrempels",
   "surplus too low": "overschot te laag",
   "target connector not ready": "doelconnector niet gereed",
   "waiting for battery SOC": "wachten op batterij-SOC",

@@ -59,6 +59,7 @@
   "completion standby pending complete": "完成 等待 等待完成",
   "disabled": "残疾人",
   "start pending": "开始等待",
+  "surplus between start and stop thresholds": "启动阈值和停止阈值之间的盈余",
   "surplus too low": "盈余过低",
   "target connector not ready": "目标连接器未准备好",
   "waiting for battery SOC": "等待电池 SOC",

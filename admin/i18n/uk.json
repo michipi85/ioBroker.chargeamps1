@@ -59,6 +59,7 @@
   "completion standby pending complete": "завершення очікування в очікуванні завершення",
   "disabled": "вимкнено",
   "start pending": "початок очікування",
+  "surplus between start and stop thresholds": "надлишок між початковим і кінцевим порогами",
   "surplus too low": "надлишок занадто низький",
   "target connector not ready": "цільовий з’єднувач не готовий",
   "waiting for battery SOC": "чекає SOC батареї",

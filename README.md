@@ -92,6 +92,11 @@ When charging is completed (`Finishing`) or ended by the car (`SuspendedEV`), th
 
 ### **WORK IN PROGRESS**
 
+### v0.3.0 (2026-06-04)
+
+- add dailyConsumptionKwh / monthlyConsumptionKwh
+- bug fixes
+
 ### v0.2.7 (2026-06-04)
 
 - fix translation

@@ -1,6 +1,6 @@
 {
   "name": "iobroker.chargeamps1",
-  "version": "0.2.7",
+  "version": "0.3.0",
   "description": "controll ChargeAmps Wallbox API",
   "author": {
     "name": "michipi85",

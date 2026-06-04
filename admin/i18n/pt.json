@@ -59,6 +59,7 @@
   "completion standby pending complete": "conclusão em espera pendente concluída",
   "disabled": "desabilitado",
   "start pending": "começar pendente",
+  "surplus between start and stop thresholds": "excedente entre os limites de início e parada",
   "surplus too low": "excedente muito baixo",
   "target connector not ready": "conector de destino não está pronto",
   "waiting for battery SOC": "esperando pelo SOC da bateria",
