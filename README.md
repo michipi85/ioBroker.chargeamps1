@@ -92,6 +92,10 @@ When charging is completed (`Finishing`) or ended by the car (`SuspendedEV`), th
 
 ### **WORK IN PROGRESS**
 
+### v0.2.7 (2026-06-04)
+
+- fix translation
+
 ### v0.2.4 (2026-06-02)
 
 - update translation

@@ -1,4 +1,5 @@
 import { Adapter, type AdapterOptions, commonTools, I18n } from '@iobroker/adapter-core';
+import { join } from 'path';
 import {
   ChargeAmpsApi,
   ChargeAmpsApiError,
@@ -48,7 +49,9 @@ class ChargeampsHalo extends Adapter {
   }
 
   private async onReady(): Promise<void> {
-    await I18n.init(__dirname, this);
+    // __dirname is /build, we need to go to /admin for i18n files
+    const adminDir = join(__dirname, '..', 'admin');
+    await I18n.init(adminDir, this);
     await this.ensureBaseObjects();
     await this.deleteObsoleteSessionObjects();
     await this.setState("info.connection", false, true);

@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const adapter_core_1 = require("@iobroker/adapter-core");
+const path_1 = require("path");
 const chargeamps_api_1 = require("./chargeamps-api");
 class ChargeampsHalo extends adapter_core_1.Adapter {
     api;
@@ -25,7 +26,9 @@ class ChargeampsHalo extends adapter_core_1.Adapter {
         this.on("unload", this.onUnload.bind(this));
     }
     async onReady() {
-        await adapter_core_1.I18n.init(__dirname, this);
+        // __dirname is /build, we need to go to /admin for i18n files
+        const adminDir = (0, path_1.join)(__dirname, '..', 'admin');
+        await adapter_core_1.I18n.init(adminDir, this);
         await this.ensureBaseObjects();
         await this.deleteObsoleteSessionObjects();
         await this.setState("info.connection", false, true);
