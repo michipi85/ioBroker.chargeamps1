@@ -601,10 +601,14 @@ class ChargeampsHalo extends Adapter {
       return;
     }
 
+    await this.disablePvAutomation(I18n.t("PV automation disabled manually"));
+  }
+
+  private async disablePvAutomation(lastAction: string): Promise<void> {
     this.clearPvTimers();
     await this.setStateChangedAsync("automation.pv.active", false, true);
     await this.setStateChangedAsync("automation.pv.decision", I18n.t("disabled"), true);
-    await this.setStateChangedAsync("automation.pv.lastAction", I18n.t("PV automation disabled manually"), true);
+    await this.setStateChangedAsync("automation.pv.lastAction", lastAction, true);
   }
 
   private async handleConnectorModeCommand(relativeId: string, mode: string): Promise<void> {
@@ -647,6 +651,8 @@ class ChargeampsHalo extends Adapter {
     const ref = this.resolveConnector(relativeId);
     if (ref) {
       await this.remoteStopConnector(ref);
+      await this.setStateAsync("automation.pv.enabled", false, true);
+      await this.disablePvAutomation(I18n.t("PV automation disabled by manual remote stop"));
     }
   }
 
