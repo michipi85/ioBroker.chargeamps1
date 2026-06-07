@@ -10,6 +10,8 @@ import {
   Measurement,
 } from "./chargeamps-api";
 
+const DIMMER_VALUES = ["off", "low", "medium", "high"];
+
 interface ConnectorRef {
   chargePointId: string;
   connectorId: number;
@@ -396,7 +398,15 @@ class ChargeampsHalo extends Adapter {
       common: { name: "Settings" },
       native: {},
     });
-    await this.ensureState(`chargepoints.${cpId}.settings.dimmer`, "Dimmer", "string", "level.dimmer", undefined, true);
+    await this.ensureState(
+      `chargepoints.${cpId}.settings.dimmer`,
+      "Dimmer",
+      "string",
+      "level.dimmer",
+      undefined,
+      true,
+      Object.fromEntries(DIMMER_VALUES.map((value) => [value, value.charAt(0).toUpperCase() + value.slice(1)])),
+    );
     await this.ensureState(
       `chargepoints.${cpId}.settings.downLight`,
       "Down light",
@@ -516,6 +526,7 @@ class ChargeampsHalo extends Adapter {
     role: string,
     unit: string | undefined,
     write: boolean,
+    states?: Record<string, string>,
   ): Promise<void> {
     await this.extendObjectAsync(id, {
       type: "state",
@@ -526,6 +537,7 @@ class ChargeampsHalo extends Adapter {
         read: true,
         write,
         unit,
+        states,
       },
       native: {},
     });
