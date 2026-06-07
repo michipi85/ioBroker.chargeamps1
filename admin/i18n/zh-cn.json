@@ -24,6 +24,7 @@
   "Optional. Leave empty if this adapter has only one connector.": "选修的。如果此适配器只有一个连接器，请留空。",
   "PV automation": "光伏自动化",
   "PV automation active": "光伏自动化活跃",
+  "PV automation disabled by manual remote stop": "通过手动远程停止禁用光伏自动化",
   "PV automation disabled manually": "手动禁用光伏自动化",
   "PV automation switches the connector on after this surplus is stable for the start delay.": "当剩余量在启动延迟内稳定后，光伏自动化会打开连接器。",
   "PV automation switches the connector to standby when surplus is at or below this value for the stop delay.": "当剩余量等于或低于该停止延迟值时，PV 自动化将连接器切换至待机状态。",
@@ -63,5 +64,6 @@
   "surplus too low": "盈余过低",
   "target connector not ready": "目标连接器未准备好",
   "waiting for battery SOC": "等待电池 SOC",
-  "waiting for surplus": "等待剩余"
+  "waiting for surplus": "等待剩余",
+  "waiting for vehicle": "等待车辆"
 }

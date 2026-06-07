@@ -730,8 +730,6 @@ class ChargeampsHalo extends Adapter {
         return;
       }
 
-      await this.setStateChangedAsync("automation.pv.active", true, true);
-
       const socOk = state.batterySoc === null || state.batterySoc >= pvNumber(this.config.pvMinBatterySoc, 20);
       const startSurplus = pvNumber(this.config.pvStartSurplusWatts, 4500);
       const stopSurplus = pvNumber(this.config.pvStopSurplusWatts, 500);
@@ -745,6 +743,19 @@ class ChargeampsHalo extends Adapter {
         await this.setStateChangedAsync("automation.pv.decision", `${I18n.t("completion standby pending")} (${connectorStatus?.status})`, true);
         return;
       }
+
+      if (!this.isVehicleConnected(connectorStatus?.status)) {
+        this.clearPvTimers();
+        await this.setStateChangedAsync("automation.pv.active", false, true);
+        await this.setStateChangedAsync(
+          "automation.pv.decision",
+          `${I18n.t("waiting for vehicle")} (${connectorStatus?.status || "unknown"})`,
+          true,
+        );
+        return;
+      }
+
+      await this.setStateChangedAsync("automation.pv.active", true, true);
 
       this.clearPvCompletionTimer();
       await this.ensureConnectorOn(ref, "PV automation active");
@@ -1038,6 +1049,10 @@ class ChargeampsHalo extends Adapter {
 
   private isChargingComplete(status: string | undefined): boolean {
     return status === "Finishing" || status === "SuspendedEV";
+  }
+
+  private isVehicleConnected(status: string | undefined): boolean {
+    return status === "Preparing" || status === "Connected" || status === "Charging";
   }
 
   private async handleSetting(relativeId: string, value: ioBroker.StateValue): Promise<void> {

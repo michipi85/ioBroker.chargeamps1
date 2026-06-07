@@ -24,6 +24,7 @@
   "Optional. Leave empty if this adapter has only one connector.": "Opcional. Déjelo vacío si este adaptador tiene un solo conector.",
   "PV automation": "Automatización fotovoltaica",
   "PV automation active": "Automatización fotovoltaica activa",
+  "PV automation disabled by manual remote stop": "Automatización fotovoltaica desactivada mediante parada remota manual",
   "PV automation disabled manually": "Automatización fotovoltaica desactivada manualmente",
   "PV automation switches the connector on after this surplus is stable for the start delay.": "La automatización fotovoltaica enciende el conector después de que este excedente se estabilice durante el retraso de inicio.",
   "PV automation switches the connector to standby when surplus is at or below this value for the stop delay.": "La automatización fotovoltaica cambia el conector al modo de espera cuando el excedente está en o por debajo de este valor para el retardo de parada.",
@@ -63,5 +64,6 @@
   "surplus too low": "excedente demasiado bajo",
   "target connector not ready": "conector de destino no listo",
   "waiting for battery SOC": "esperando el SOC de la batería",
-  "waiting for surplus": "esperando excedente"
+  "waiting for surplus": "esperando excedente",
+  "waiting for vehicle": "esperando el vehículo"
 }

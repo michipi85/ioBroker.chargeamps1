@@ -24,6 +24,7 @@
   "Optional. Leave empty if this adapter has only one connector.": "Optioneel. Laat dit leeg als deze adapter slechts één connector heeft.",
   "PV automation": "PV-automatisering",
   "PV automation active": "PV-automatisering actief",
+  "PV automation disabled by manual remote stop": "PV-automatisering uitgeschakeld door handmatige stop op afstand",
   "PV automation disabled manually": "PV-automatisering handmatig uitgeschakeld",
   "PV automation switches the connector on after this surplus is stable for the start delay.": "PV-automatisering schakelt de connector in nadat dit overschot stabiel is voor de startvertraging.",
   "PV automation switches the connector to standby when surplus is at or below this value for the stop delay.": "PV-automatisering schakelt de connector in stand-by wanneer het overschot op of onder deze waarde voor de stopvertraging ligt.",
@@ -63,5 +64,6 @@
   "surplus too low": "overschot te laag",
   "target connector not ready": "doelconnector niet gereed",
   "waiting for battery SOC": "wachten op batterij-SOC",
-  "waiting for surplus": "wachten op overschot"
+  "waiting for surplus": "wachten op overschot",
+  "waiting for vehicle": "wachten op voertuig"
 }

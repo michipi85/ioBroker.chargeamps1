@@ -24,6 +24,7 @@
   "Optional. Leave empty if this adapter has only one connector.": "Додатково. Залиште порожнім, якщо цей адаптер має лише один роз’єм.",
   "PV automation": "Автоматика PV",
   "PV automation active": "Активна фотоелектрична автоматизація",
+  "PV automation disabled by manual remote stop": "Автоматику PV вимкнено шляхом ручної дистанційної зупинки",
   "PV automation disabled manually": "Автоматику PV вимкнено вручну",
   "PV automation switches the connector on after this surplus is stable for the start delay.": "Автоматика PV вмикає роз’єм після того, як цей надлишок стабільний для затримки запуску.",
   "PV automation switches the connector to standby when surplus is at or below this value for the stop delay.": "Автоматика PV перемикає з’єднувач у режим очікування, коли надлишок становить або нижче цього значення для затримки зупинки.",
@@ -63,5 +64,6 @@
   "surplus too low": "надлишок занадто низький",
   "target connector not ready": "цільовий з’єднувач не готовий",
   "waiting for battery SOC": "чекає SOC батареї",
-  "waiting for surplus": "в очікуванні надлишку"
+  "waiting for surplus": "в очікуванні надлишку",
+  "waiting for vehicle": "в очікуванні автомобіля"
 }
