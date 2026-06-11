@@ -744,6 +744,9 @@ class ChargeampsHalo extends Adapter {
         return;
       }
 
+      this.clearPvCompletionTimer();
+      await this.ensureConnectorOn(ref, "PV automation enabled");
+
       if (!this.isVehicleConnected(connectorStatus?.status)) {
         this.clearPvTimers();
         await this.setStateChangedAsync("automation.pv.active", false, true);
@@ -756,9 +759,6 @@ class ChargeampsHalo extends Adapter {
       }
 
       await this.setStateChangedAsync("automation.pv.active", true, true);
-
-      this.clearPvCompletionTimer();
-      await this.ensureConnectorOn(ref, "PV automation active");
 
       if (state.surplusPower >= startSurplus && socOk) {
         this.clearPvStopTimer();
@@ -1048,11 +1048,11 @@ class ChargeampsHalo extends Adapter {
   }
 
   private isChargingComplete(status: string | undefined): boolean {
-    return status === "Finishing" || status === "SuspendedEV";
+    return status === "Finishing";
   }
 
   private isVehicleConnected(status: string | undefined): boolean {
-    return status === "Preparing" || status === "Connected" || status === "Charging";
+    return status === "Preparing" || status === "Connected" || status === "Charging" || status === "SuspendedEV";
   }
 
   private async handleSetting(relativeId: string, value: ioBroker.StateValue): Promise<void> {

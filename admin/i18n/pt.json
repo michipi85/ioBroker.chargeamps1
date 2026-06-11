@@ -54,6 +54,7 @@
   "Surplus between start and stop thresholds": "Excedente entre os limites de início e parada",
   "Voltage per phase": "Tensão por fase",
   "When connector status is Finishing or SuspendedEV, the adapter sets mode to Off after this delay.": "Quando o status do conector for Finishing ou SuspendedEV, o adaptador define o modo como Off após esse atraso.",
+  "When connector status is Finishing, the adapter sets mode to Off after this delay.": "Quando o status do conector for Finishing, o adaptador definirá o modo como Off após esse atraso.",
   "battery SOC too low": "SOC da bateria muito baixo",
   "charging completed, automation disabled": "carregamento concluído, automação desativada",
   "charging with PV surplus": "carregando com excedente fotovoltaico",

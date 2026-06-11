@@ -54,6 +54,7 @@
   "Surplus between start and stop thresholds": "Overschot tussen start- en stopdrempels",
   "Voltage per phase": "Spanning per fase",
   "When connector status is Finishing or SuspendedEV, the adapter sets mode to Off after this delay.": "Wanneer de connectorstatus Bezig met voltooien of SuspendedEV is, stelt de adapter de modus na deze vertraging in op Uit.",
+  "When connector status is Finishing, the adapter sets mode to Off after this delay.": "Wanneer de connectorstatus Bezig met voltooien is, stelt de adapter na deze vertraging de modus in op Uit.",
   "battery SOC too low": "batterij-SOC te laag",
   "charging completed, automation disabled": "opladen voltooid, automatisering uitgeschakeld",
   "charging with PV surplus": "opladen met PV-overschot",

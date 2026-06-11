@@ -54,6 +54,7 @@
   "Surplus between start and stop thresholds": "Излишек между порогами запуска и остановки",
   "Voltage per phase": "Напряжение на фазу",
   "When connector status is Finishing or SuspendedEV, the adapter sets mode to Off after this delay.": "Если состояние разъема — Finishing или SuspendedEV, после этой задержки адаптер устанавливает режим Off.",
+  "When connector status is Finishing, the adapter sets mode to Off after this delay.": "Когда состояние разъема — «Завершение», после этой задержки адаптер устанавливает режим «Выкл.».",
   "battery SOC too low": "SOC батареи слишком низкий",
   "charging completed, automation disabled": "зарядка завершена, автоматика отключена",
   "charging with PV surplus": "зарядка фотоэлектрическими излишками",

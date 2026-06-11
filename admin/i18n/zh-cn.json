@@ -54,6 +54,7 @@
   "Surplus between start and stop thresholds": "启动和停止阈值之间的盈余",
   "Voltage per phase": "每相电压",
   "When connector status is Finishing or SuspendedEV, the adapter sets mode to Off after this delay.": "当连接器状态为“正在完成”或“暂停EV”时，适配器会在此延迟后将模式设置为“关闭”。",
+  "When connector status is Finishing, the adapter sets mode to Off after this delay.": "当连接器状态为“正在完成”时，适配器会在此延迟后将模式设置为“关闭”。",
   "battery SOC too low": "电池 SOC 过低",
   "charging completed, automation disabled": "充电完成，自动禁用",
   "charging with PV surplus": "光伏剩余电量充电",

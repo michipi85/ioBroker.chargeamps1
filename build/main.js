@@ -552,6 +552,8 @@ class ChargeampsHalo extends adapter_core_1.Adapter {
                 await this.setStateChangedAsync("automation.pv.decision", `${adapter_core_1.I18n.t("completion standby pending")} (${connectorStatus?.status})`, true);
                 return;
             }
+            this.clearPvCompletionTimer();
+            await this.ensureConnectorOn(ref, "PV automation enabled");
             if (!this.isVehicleConnected(connectorStatus?.status)) {
                 this.clearPvTimers();
                 await this.setStateChangedAsync("automation.pv.active", false, true);
@@ -559,8 +561,6 @@ class ChargeampsHalo extends adapter_core_1.Adapter {
                 return;
             }
             await this.setStateChangedAsync("automation.pv.active", true, true);
-            this.clearPvCompletionTimer();
-            await this.ensureConnectorOn(ref, "PV automation active");
             if (state.surplusPower >= startSurplus && socOk) {
                 this.clearPvStopTimer();
                 await this.applyPvCurrent(ref, state.calculatedCurrent, reason);
@@ -803,10 +803,10 @@ class ChargeampsHalo extends adapter_core_1.Adapter {
         void this.setStateChangedAsync("automation.pv.completionPending", false, true);
     }
     isChargingComplete(status) {
-        return status === "Finishing" || status === "SuspendedEV";
+        return status === "Finishing";
     }
     isVehicleConnected(status) {
-        return status === "Preparing" || status === "Connected" || status === "Charging";
+        return status === "Preparing" || status === "Connected" || status === "Charging" || status === "SuspendedEV";
     }
     async handleSetting(relativeId, value) {
         const parts = relativeId.split(".");

@@ -38,7 +38,7 @@
   "Start delay in seconds": "Start delay in seconds",
   "Stop delay in seconds": "Stop delay in seconds",
   "Standby delay after completed charging in seconds": "Standby delay after completed charging in seconds",
-  "When connector status is Finishing or SuspendedEV, the adapter sets mode to Off after this delay.": "When connector status is Finishing or SuspendedEV, the adapter sets mode to Off after this delay.",
+  "When connector status is Finishing, the adapter sets mode to Off after this delay.": "When connector status is Finishing, the adapter sets mode to Off after this delay.",
   "Surplus between start and stop thresholds": "Surplus between start and stop thresholds",
   "waiting for surplus": "waiting for surplus",
   "waiting for vehicle": "waiting for vehicle",

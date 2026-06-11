@@ -44,10 +44,10 @@ The PV automation is optional and disabled by default. It controls the configure
 - `pvStartSurplusWatts`: surplus required before switching the connector to `On`
 - `pvStopSurplusWatts`: surplus threshold for switching the connector to `Off`
 - `pvStartDelaySeconds` / `pvStopDelaySeconds`: debounce delays before changing mode
-- `pvCompletionStandbyDelaySeconds`: delay before switching the wallbox to standby after connector status `Finishing` or `SuspendedEV`
+- `pvCompletionStandbyDelaySeconds`: delay before switching the wallbox to standby after connector status `Finishing`
 
 With the default values, the automation expects negative grid power for feed-in, starts the charging session after stable surplus of 4500 W, pauses it when surplus drops to 500 W or less, and regulates between 6 A and 16 A. Because Charge Amps requires RFID for `remoteStart`, configure RFID when PV automation should be able to resume charging automatically. Without RFID, the adapter can switch the wallbox to `On` and pause with `remoteStop`, but automatic resume with `remoteStart` is skipped.
-When charging is completed (`Finishing`) or ended by the car (`SuspendedEV`), the automation sets `settings.mode` to `Off` after the configured standby delay and then sets `automation.pv.enabled` to `false`. This way, the next PV charging session must be enabled deliberately again.
+When charging is completed (`Finishing`), the automation sets `settings.mode` to `Off` after the configured standby delay and then sets `automation.pv.enabled` to `false`. This way, the next PV charging session must be enabled deliberately again. `SuspendedEV` is treated as a connected vehicle state and no longer ends the PV automation by itself.
 
 ## Funktion
 

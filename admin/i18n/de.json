@@ -53,7 +53,7 @@
   "Stop timer scheduled": "Stopp-Timer geplant",
   "Surplus between start and stop thresholds": "Überschuss zwischen Start- und Stoppschwellen",
   "Voltage per phase": "Spannung pro Phase",
-  "When connector status is Finishing or SuspendedEV, the adapter sets mode to Off after this delay.": "Wenn der Connector-Status „Finishing“ oder „SuspendedEV“ lautet, setzt der Adapter den Modus nach dieser Verzögerung auf „Off“.",
+  "When connector status is Finishing, the adapter sets mode to Off after this delay.": "Wenn der Connector-Status „Finishing“ lautet, setzt der Adapter den Modus nach dieser Verzögerung auf „Off“.",
   "battery SOC too low": "Batterieladezustand zu niedrig",
   "charging completed, automation disabled": "Ladevorgang abgeschlossen, Automatisierung deaktiviert",
   "charging with PV surplus": "Laden mit PV-Überschuss",
