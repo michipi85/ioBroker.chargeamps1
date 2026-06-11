@@ -10,6 +10,7 @@ class ChargeampsHalo extends adapter_core_1.Adapter {
     pvStartTimer;
     pvStopTimer;
     pvCompletionTimer;
+    scheduleTimer;
     chargePointIds = new Map();
     connectorIds = new Map();
     chargePointSettings = new Map();
@@ -34,6 +35,7 @@ class ChargeampsHalo extends adapter_core_1.Adapter {
         await this.deleteObsoleteSessionObjects();
         await this.setState("info.connection", false, true);
         await this.setState("automation.pv.enabled", Boolean(this.config.pvAutomationEnabled), true);
+        await this.setState("automation.schedule.enabled", Boolean(this.config.scheduleAutomationEnabled), true);
         if (!this.config.email || !this.config.password || !this.config.apiKey) {
             this.log.warn("Please configure email, password and API key.");
             return;
@@ -48,6 +50,7 @@ class ChargeampsHalo extends adapter_core_1.Adapter {
         await this.subscribePvAutomationStates();
         await this.poll();
         await this.evaluatePvAutomation("startup");
+        await this.scheduleNextScheduledCharge();
     }
     onUnload(callback) {
         try {
@@ -56,6 +59,7 @@ class ChargeampsHalo extends adapter_core_1.Adapter {
                 this.pollTimer = undefined;
             }
             this.clearPvTimers();
+            this.clearScheduleTimer();
             void this.setState("info.connection", false, true);
             callback();
         }
@@ -237,6 +241,16 @@ class ChargeampsHalo extends adapter_core_1.Adapter {
         await this.ensureState("automation.pv.startPending", "Start pending", "boolean", "indicator", undefined, false);
         await this.ensureState("automation.pv.stopPending", "Stop pending", "boolean", "indicator", undefined, false);
         await this.ensureState("automation.pv.completionPending", "Completion standby pending", "boolean", "indicator", undefined, false);
+        await this.extendObjectAsync("automation.schedule", {
+            type: "channel",
+            common: { name: "Schedule automation" },
+            native: {},
+        });
+        await this.ensureState("automation.schedule.enabled", "Schedule automation enabled", "boolean", "switch", undefined, true);
+        await this.ensureState("automation.schedule.active", "Schedule automation active", "boolean", "indicator", undefined, false);
+        await this.ensureState("automation.schedule.nextRun", "Next run", "string", "date", undefined, false);
+        await this.ensureState("automation.schedule.lastRun", "Last run", "string", "date", undefined, false);
+        await this.ensureState("automation.schedule.lastAction", "Last action", "string", "text", undefined, false);
     }
     async deleteObsoleteSessionObjects() {
         const objects = await this.getObjectListAsync({
@@ -417,6 +431,10 @@ class ChargeampsHalo extends adapter_core_1.Adapter {
                 await this.handlePvAutomationEnabledChange(Boolean(state.val));
                 return;
             }
+            else if (relativeId === "automation.schedule.enabled") {
+                await this.handleScheduleAutomationEnabledChange(Boolean(state.val));
+                return;
+            }
             else if (relativeId.includes(".settings.")) {
                 await this.handleSetting(relativeId, state.val);
             }
@@ -451,6 +469,106 @@ class ChargeampsHalo extends adapter_core_1.Adapter {
         await this.setStateChangedAsync("automation.pv.decision", adapter_core_1.I18n.t("disabled"), true);
         await this.setStateChangedAsync("automation.pv.lastAction", lastAction, true);
     }
+    async handleScheduleAutomationEnabledChange(enabled) {
+        await this.setStateAsync("automation.schedule.enabled", enabled, true);
+        if (enabled) {
+            await this.scheduleNextScheduledCharge();
+            return;
+        }
+        this.clearScheduleTimer();
+        await this.setStateChangedAsync("automation.schedule.active", false, true);
+        await this.setStateChangedAsync("automation.schedule.nextRun", "", true);
+        await this.setStateChangedAsync("automation.schedule.lastAction", adapter_core_1.I18n.t("Schedule automation disabled manually"), true);
+    }
+    async scheduleNextScheduledCharge() {
+        this.clearScheduleTimer();
+        const enabledState = await this.getStateAsync("automation.schedule.enabled");
+        const enabled = Boolean(enabledState?.val) && Boolean(this.config.scheduleAutomationEnabled);
+        if (!enabled) {
+            await this.setStateChangedAsync("automation.schedule.active", false, true);
+            await this.setStateChangedAsync("automation.schedule.nextRun", "", true);
+            return;
+        }
+        const nextRun = nextScheduleRun(new Date(), this.config.scheduleTime, this.scheduleWeekdays());
+        if (!nextRun) {
+            await this.setStateChangedAsync("automation.schedule.active", false, true);
+            await this.setStateChangedAsync("automation.schedule.nextRun", "", true);
+            await this.setStateChangedAsync("automation.schedule.lastAction", adapter_core_1.I18n.t("Schedule not configured"), true);
+            return;
+        }
+        const delay = Math.max(1, nextRun.getTime() - Date.now());
+        this.scheduleTimer = this.setTimeout(() => {
+            this.scheduleTimer = undefined;
+            void this.executeScheduledCharge();
+        }, delay);
+        await this.setStateChangedAsync("automation.schedule.active", true, true);
+        await this.setStateChangedAsync("automation.schedule.nextRun", formatDateTimeKey(nextRun), true);
+        await this.setStateChangedAsync("automation.schedule.lastAction", `${adapter_core_1.I18n.t("Next scheduled charge")}: ${formatDateTimeKey(nextRun)}`, true);
+    }
+    async executeScheduledCharge() {
+        try {
+            const ref = this.resolveScheduleConnector();
+            if (!ref) {
+                await this.setStateChangedAsync("automation.schedule.active", false, true);
+                await this.setStateChangedAsync("automation.schedule.lastAction", adapter_core_1.I18n.t("target connector not ready"), true);
+                return;
+            }
+            const current = clamp(normalizeCurrent(pvNumber(this.config.scheduleCurrent, 16)), 6, 32);
+            await this.applyScheduledCurrent(ref, current);
+            await this.ensureConnectorOn(ref, "schedule automation");
+            const started = await this.remoteStartConnector(ref, "automation.schedule.lastAction");
+            const now = new Date();
+            await this.setStateChangedAsync("automation.schedule.lastRun", formatDateTimeKey(now), true);
+            if (started) {
+                await this.setStateChangedAsync("automation.schedule.lastAction", `${adapter_core_1.I18n.t("Scheduled charge started")} (${current} A)`, true);
+            }
+            await this.poll();
+        }
+        catch (error) {
+            this.log.warn(`Schedule automation failed: ${formatError(error)}`);
+            await this.setStateChangedAsync("automation.schedule.lastAction", `error: ${formatError(error)}`, true);
+        }
+        finally {
+            await this.scheduleNextScheduledCharge();
+        }
+    }
+    scheduleWeekdays() {
+        const days = [];
+        if (this.config.scheduleSunday) {
+            days.push(0);
+        }
+        if (this.config.scheduleMonday) {
+            days.push(1);
+        }
+        if (this.config.scheduleTuesday) {
+            days.push(2);
+        }
+        if (this.config.scheduleWednesday) {
+            days.push(3);
+        }
+        if (this.config.scheduleThursday) {
+            days.push(4);
+        }
+        if (this.config.scheduleFriday) {
+            days.push(5);
+        }
+        if (this.config.scheduleSaturday) {
+            days.push(6);
+        }
+        return days;
+    }
+    resolveScheduleConnector() {
+        const connectorId = objectId(String(Number(this.config.scheduleConnectorId) || 1));
+        const configuredChargePointId = this.config.scheduleChargePointId?.trim();
+        if (configuredChargePointId) {
+            const cpId = objectId(configuredChargePointId);
+            return this.connectorIds.get(`${cpId}.${connectorId}`);
+        }
+        if (this.connectorIds.size === 1) {
+            return [...this.connectorIds.values()][0];
+        }
+        return undefined;
+    }
     async handleConnectorModeCommand(relativeId, mode) {
         const ref = this.resolveConnector(relativeId);
         if (!ref) {
@@ -466,10 +584,10 @@ class ChargeampsHalo extends adapter_core_1.Adapter {
         }
         await this.remoteStartConnector(ref);
     }
-    async remoteStartConnector(ref) {
+    async remoteStartConnector(ref, lastActionState = "automation.pv.lastAction") {
         if (!this.config.rfid) {
             this.log.warn("Remote start was skipped because the Charge Amps API requires an RFID for this command.");
-            await this.setStateChangedAsync("automation.pv.lastAction", adapter_core_1.I18n.t("Remote start skipped: missing RFID"), true);
+            await this.setStateChangedAsync(lastActionState, adapter_core_1.I18n.t("Remote start skipped: missing RFID"), true);
             return false;
         }
         await this.ensureConnectorOn(ref, "before remoteStart");
@@ -751,6 +869,21 @@ class ChargeampsHalo extends adapter_core_1.Adapter {
         }
         await this.setStateChangedAsync("automation.pv.lastAction", `${adapter_core_1.I18n.t("Set current to")} ${normalizedCurrent} A (${reason})`, true);
     }
+    async applyScheduledCurrent(ref, current) {
+        const settings = this.connectorSettings.get(connectorKey(ref.chargePointId, ref.connectorId));
+        if (!settings || settings.maxCurrent === current) {
+            return;
+        }
+        const normalizedCurrent = normalizeCurrent(current);
+        const changed = { ...settings, maxCurrent: normalizedCurrent };
+        await this.api?.setConnectorSettings(changed);
+        this.connectorSettings.set(connectorKey(ref.chargePointId, ref.connectorId), changed);
+        const ids = this.connectorObjectIds(ref);
+        if (ids) {
+            await this.setStateChangedAsync(`chargepoints.${ids.cpId}.connectors.${ids.connectorId}.settings.maxCurrent`, normalizedCurrent, true);
+        }
+        await this.setStateChangedAsync("automation.schedule.lastAction", `${adapter_core_1.I18n.t("Set current to")} ${normalizedCurrent} A (${adapter_core_1.I18n.t("Schedule automation")})`, true);
+    }
     async applyPvStandby(ref, reason) {
         const settings = this.connectorSettings.get(connectorKey(ref.chargePointId, ref.connectorId));
         if (!settings) {
@@ -780,6 +913,12 @@ class ChargeampsHalo extends adapter_core_1.Adapter {
         this.clearPvStartTimer();
         this.clearPvStopTimer();
         this.clearPvCompletionTimer();
+    }
+    clearScheduleTimer() {
+        if (this.scheduleTimer) {
+            this.clearTimeout(this.scheduleTimer);
+            this.scheduleTimer = undefined;
+        }
     }
     clearPvStartTimer() {
         if (this.pvStartTimer) {
@@ -904,6 +1043,39 @@ function formatDayKey(date) {
     const month = String(date.getMonth() + 1).padStart(2, "0");
     const day = String(date.getDate()).padStart(2, "0");
     return `${year}-${month}-${day}`;
+}
+function formatDateTimeKey(date) {
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    return `${formatDayKey(date)} ${hours}:${minutes}`;
+}
+function nextScheduleRun(now, time, weekdays) {
+    const parsedTime = parseScheduleTime(time);
+    if (!parsedTime || !weekdays.length) {
+        return undefined;
+    }
+    for (let dayOffset = 0; dayOffset <= 7; dayOffset++) {
+        const candidate = new Date(now);
+        candidate.setDate(now.getDate() + dayOffset);
+        candidate.setHours(parsedTime.hours, parsedTime.minutes, 0, 0);
+        if (candidate.getTime() <= now.getTime()) {
+            continue;
+        }
+        if (weekdays.includes(candidate.getDay())) {
+            return candidate;
+        }
+    }
+    return undefined;
+}
+function parseScheduleTime(value) {
+    const match = (value || "").trim().match(/^([01]?\d|2[0-3]):([0-5]\d)$/);
+    if (!match) {
+        return undefined;
+    }
+    return {
+        hours: Number(match[1]),
+        minutes: Number(match[2]),
+    };
 }
 function rfidLength(rfid, format, configuredLength) {
     const normalizedFormat = (format || "Hex").toLowerCase();

@@ -27,6 +27,18 @@ declare global {
       pvStartDelaySeconds: number;
       pvStopDelaySeconds: number;
       pvCompletionStandbyDelaySeconds: number;
+      scheduleAutomationEnabled: boolean;
+      scheduleChargePointId: string;
+      scheduleConnectorId: number;
+      scheduleTime: string;
+      scheduleCurrent: number;
+      scheduleMonday: boolean;
+      scheduleTuesday: boolean;
+      scheduleWednesday: boolean;
+      scheduleThursday: boolean;
+      scheduleFriday: boolean;
+      scheduleSaturday: boolean;
+      scheduleSunday: boolean;
     }
   }
 }

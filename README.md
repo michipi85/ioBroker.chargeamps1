@@ -49,6 +49,12 @@ The PV automation is optional and disabled by default. It controls the configure
 With the default values, the automation expects negative grid power for feed-in, starts the charging session after stable surplus of 4500 W, pauses it when surplus drops to 500 W or less, and regulates between 6 A and 16 A. Because Charge Amps requires RFID for `remoteStart`, configure RFID when PV automation should be able to resume charging automatically. Without RFID, the adapter can switch the wallbox to `On` and pause with `remoteStop`, but automatic resume with `remoteStart` is skipped.
 When charging is completed (`Finishing`), the automation sets `settings.mode` to `Off` after the configured standby delay and then sets `automation.pv.enabled` to `false`. This way, the next PV charging session must be enabled deliberately again. `SuspendedEV` is treated as a connected vehicle state and no longer ends the PV automation by itself.
 
+### Schedule automation
+
+The schedule automation is optional and disabled by default. Configure the target connector, time, weekdays and charging current in the adapter settings. Enable or disable the runtime schedule with `automation.schedule.enabled`.
+
+At the configured local time on the selected weekdays, the adapter sets `settings.maxCurrent`, switches the connector to `On` and sends `remoteStart`. RFID must be configured for the scheduled `remoteStart`, just like for PV automation.
+
 ## Funktion
 
 **The convenience commands change the connector mode:**
@@ -78,10 +84,15 @@ When charging is completed (`Finishing`), the automation sets `settings.mode` to
 - automation.pv.startPending
 - automation.pv.stopPending
 - automation.pv.completionPending
+- automation.schedule.enabled
+- automation.schedule.active
+- automation.schedule.nextRun
+- automation.schedule.lastRun
+- automation.schedule.lastAction
 
 ## ToDo
 
-- implement the Schedule function
+- improve schedule handling with stop times if needed
 
 ## Changelog
 
@@ -91,6 +102,10 @@ When charging is completed (`Finishing`), the automation sets `settings.mode` to
 -->
 
 ### **WORK IN PROGRESS**
+
+### v0.4.0 (2026-06-11)
+
+- add schedule function
 
 ### v0.3.0 (2026-06-04)
 
