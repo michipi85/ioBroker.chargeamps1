@@ -96,11 +96,6 @@ At the configured local time on the selected weekdays, the adapter sets `setting
 
 ## Changelog
 
-<!--
-    Placeholder for the next version (at the beginning of the line):
-    ### **WORK IN PROGRESS**
--->
-
 ### **WORK IN PROGRESS**
 
 ### v0.4.0 (2026-06-11)
