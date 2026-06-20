@@ -42,12 +42,15 @@ The PV automation is optional and disabled by default. It controls the configure
 - `pvMinCurrent` / `pvMaxCurrent`: current limits in A
 - `pvVoltage` / `pvPhases`: used to calculate current from surplus power
 - `pvStartSurplusWatts`: surplus required before switching the connector to `On`
-- `pvStopSurplusWatts`: surplus threshold for switching the connector to `Off`
+- `pvStopSurplusWatts`: surplus threshold for pausing charging with `remoteStop`
 - `pvStartDelaySeconds` / `pvStopDelaySeconds`: debounce delays before changing mode
 - `pvCompletionStandbyDelaySeconds`: delay before switching the wallbox to standby after connector status `Finishing`
+- `pvSunsetState`: state containing today's sunset, for example `javascript.0.variables.astro.sunset`
 
 With the default values, the automation expects negative grid power for feed-in, starts the charging session after stable surplus of 4500 W, pauses it when surplus drops to 500 W or less, and regulates between 6 A and 16 A. Because Charge Amps requires RFID for `remoteStart`, configure RFID when PV automation should be able to resume charging automatically. Without RFID, the adapter can switch the wallbox to `On` and pause with `remoteStop`, but automatic resume with `remoteStart` is skipped.
-When charging is completed (`Finishing`), the automation sets `settings.mode` to `Off` after the configured standby delay and then sets `automation.pv.enabled` to `false`. This way, the next PV charging session must be enabled deliberately again. `SuspendedEV` is treated as a connected vehicle state and no longer ends the PV automation by itself.
+When PV automation pauses charging because surplus is too low, the wallbox remains `On`. A following `Finishing` status is ignored as a completion signal because it was caused by the adapter's own `remoteStop`. Charging can resume when enough surplus returns. At sunset, the wallbox is switched to `Off` and PV automation is disabled.
+
+When charging reaches `Finishing` without a preceding automatic PV stop, the adapter treats this as a completed charging session. It switches the wallbox to standby after the configured delay and disables PV automation. `SuspendedEV` is treated as a connected vehicle state and does not end PV automation by itself.
 
 ### Schedule automation
 
@@ -83,6 +86,8 @@ At the configured local time on the selected weekdays, the adapter sets `setting
 - automation.pv.lastAction
 - automation.pv.startPending
 - automation.pv.stopPending
+- automation.pv.pausedByAutomation
+- automation.pv.sunset
 - automation.pv.completionPending
 - automation.schedule.enabled
 - automation.schedule.active
@@ -96,7 +101,10 @@ At the configured local time on the selected weekdays, the adapter sets `setting
 
 ## Changelog
 
-### **WORK IN PROGRESS**
+### v0.4.1 (2026-06-20)
+
+- add pvSunsetState
+- bug fixes
 
 ### v0.4.0 (2026-06-11)
 

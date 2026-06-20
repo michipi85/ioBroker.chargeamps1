@@ -86,5 +86,11 @@
   "Time in HH:mm format, for example 22:30.": "Time in HH:mm format, for example 22:30.",
   "Tuesday": "Tuesday",
   "Wednesday": "Wednesday",
-  "surplus between start and stop thresholds": "surplus between start and stop thresholds"
+  "surplus between start and stop thresholds": "surplus between start and stop thresholds",
+  "Paused by PV automation": "Paused by PV automation",
+  "Sunset": "Sunset",
+  "Sunset state ID": "Sunset state ID",
+  "charging paused, waiting for surplus or sunset": "charging paused, waiting for surplus or sunset",
+  "When charging was paused by PV automation, the wallbox remains on until surplus returns or this sunset time is reached.": "When charging was paused by PV automation, the wallbox remains on until surplus returns or this sunset time is reached.",
+  "PV automation pauses charging with remoteStop when surplus is at or below this value for the stop delay.": "PV automation pauses charging with remoteStop when surplus is at or below this value for the stop delay."
 }

@@ -245,7 +245,7 @@
         "pvStopSurplusWatts": {
           "type": "number",
           "label": "Stop surplus in W",
-          "help": "PV automation switches the connector to standby when surplus is at or below this value for the stop delay.",
+          "help": "PV automation pauses charging with remoteStop when surplus is at or below this value for the stop delay.",
           "xs": 12,
           "sm": 4,
           "md": 4,
@@ -283,6 +283,17 @@
           "md": 3,
           "lg": 3,
           "xl": 3
+        },
+        "pvSunsetState": {
+          "type": "objectId",
+          "label": "Sunset state ID",
+          "help": "When charging was paused by PV automation, the wallbox remains on until surplus returns or this sunset time is reached.",
+          "newLine": true,
+          "xs": 12,
+          "sm": 12,
+          "md": 8,
+          "lg": 4,
+          "xl": 4
         }
       }
     },

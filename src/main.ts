@@ -22,6 +22,7 @@ interface PvAutomationState {
   surplusPower: number;
   batterySoc: number | null;
   calculatedCurrent: number;
+  sunset: Date | null;
   decision: string;
 }
 
@@ -310,6 +311,15 @@ class ChargeampsHalo extends Adapter {
     await this.ensureState("automation.pv.startPending", "Start pending", "boolean", "indicator", undefined, false);
     await this.ensureState("automation.pv.stopPending", "Stop pending", "boolean", "indicator", undefined, false);
     await this.ensureState(
+      "automation.pv.pausedByAutomation",
+      "Paused by PV automation",
+      "boolean",
+      "indicator",
+      undefined,
+      false,
+    );
+    await this.ensureState("automation.pv.sunset", "Sunset", "string", "date", undefined, false);
+    await this.ensureState(
       "automation.pv.completionPending",
       "Completion standby pending",
       "boolean",
@@ -358,7 +368,7 @@ class ChargeampsHalo extends Adapter {
   }
 
   private async subscribePvAutomationStates(): Promise<void> {
-    const stateIds = [this.config.pvGridPowerState, this.config.pvBatterySocState]
+    const stateIds = [this.config.pvGridPowerState, this.config.pvBatterySocState, this.config.pvSunsetState]
       .map((id) => id?.trim())
       .filter((id): id is string => Boolean(id));
 
@@ -635,6 +645,7 @@ class ChargeampsHalo extends Adapter {
 
   private async disablePvAutomation(lastAction: string): Promise<void> {
     this.clearPvTimers();
+    await this.setStateChangedAsync("automation.pv.pausedByAutomation", false, true);
     await this.setStateChangedAsync("automation.pv.active", false, true);
     await this.setStateChangedAsync("automation.pv.decision", I18n.t("disabled"), true);
     await this.setStateChangedAsync("automation.pv.lastAction", lastAction, true);
@@ -829,7 +840,7 @@ class ChargeampsHalo extends Adapter {
   }
 
   private isPvAutomationSourceState(id: string): boolean {
-    return [this.config.pvGridPowerState, this.config.pvBatterySocState]
+    return [this.config.pvGridPowerState, this.config.pvBatterySocState, this.config.pvSunsetState]
       .map((stateId) => stateId?.trim())
       .some((stateId) => stateId === id);
   }
@@ -864,8 +875,14 @@ class ChargeampsHalo extends Adapter {
       const stopSurplus = pvNumber(this.config.pvStopSurplusWatts, 500);
       const connectorStatus = this.connectorStatuses.get(connectorKey(ref.chargePointId, ref.connectorId));
       const isCharging = connectorStatus?.status === "Charging";
+      let pausedByAutomation = Boolean((await this.getStateAsync("automation.pv.pausedByAutomation"))?.val);
 
-      if (this.isChargingComplete(connectorStatus?.status)) {
+      if (isCharging && pausedByAutomation) {
+        pausedByAutomation = false;
+        await this.setStateChangedAsync("automation.pv.pausedByAutomation", false, true);
+      }
+
+      if (this.isChargingComplete(connectorStatus?.status) && !pausedByAutomation) {
         this.clearPvStartTimer();
         this.clearPvStopTimer();
         this.schedulePvCompletionStandby(ref, connectorStatus?.status || "complete");
@@ -874,9 +891,15 @@ class ChargeampsHalo extends Adapter {
       }
 
       this.clearPvCompletionTimer();
+
+      if (pausedByAutomation && state.sunset && Date.now() >= state.sunset.getTime()) {
+        await this.applyPvStandby(ref, "sunset reached");
+        return;
+      }
+
       await this.ensureConnectorOn(ref, "PV automation enabled");
 
-      if (!this.isVehicleConnected(connectorStatus?.status)) {
+      if (!this.isVehicleConnected(connectorStatus?.status, pausedByAutomation)) {
         this.clearPvTimers();
         await this.setStateChangedAsync("automation.pv.active", false, true);
         await this.setStateChangedAsync(
@@ -911,7 +934,11 @@ class ChargeampsHalo extends Adapter {
         }
         await this.setStateChangedAsync(
           "automation.pv.decision",
-          socOk ? I18n.t("waiting for surplus") : I18n.t("waiting for battery SOC"),
+          pausedByAutomation
+            ? I18n.t("charging paused, waiting for surplus or sunset")
+            : socOk
+              ? I18n.t("waiting for surplus")
+              : I18n.t("waiting for battery SOC"),
           true,
         );
         return;
@@ -946,6 +973,7 @@ class ChargeampsHalo extends Adapter {
         surplusPower: 0,
         batterySoc: null,
         calculatedCurrent: pvNumber(this.config.pvMinCurrent, 6),
+        sunset: null,
         decision: gridPowerStateId ? I18n.t("disabled") : I18n.t("missing grid power state"),
       };
     }
@@ -957,12 +985,15 @@ class ChargeampsHalo extends Adapter {
     const batterySocStateId = this.config.pvBatterySocState?.trim();
     const batterySoc = batterySocStateId ? await this.readForeignNumber(batterySocStateId) : null;
     const calculatedCurrent = this.calculatePvCurrent(surplusPower);
+    const sunsetStateId = this.config.pvSunsetState?.trim();
+    const sunset = sunsetStateId ? await this.readForeignDate(sunsetStateId) : null;
 
     return {
       enabled,
       surplusPower,
       batterySoc,
       calculatedCurrent,
+      sunset,
       decision: "evaluating",
     };
   }
@@ -971,6 +1002,7 @@ class ChargeampsHalo extends Adapter {
     await this.setStateChangedAsync("automation.pv.surplusPower", state.surplusPower, true);
     await this.setStateChangedAsync("automation.pv.batterySoc", state.batterySoc, true);
     await this.setStateChangedAsync("automation.pv.calculatedCurrent", state.calculatedCurrent, true);
+    await this.setStateChangedAsync("automation.pv.sunset", state.sunset ? formatDateTimeKey(state.sunset) : "", true);
     await this.setStateChangedAsync("automation.pv.decision", state.decision, true);
   }
 
@@ -981,6 +1013,19 @@ class ChargeampsHalo extends Adapter {
       throw new Error(`State ${id} does not contain a numeric value`);
     }
     return value;
+  }
+
+  private async readForeignDate(id: string): Promise<Date | null> {
+    const state = await this.getForeignStateAsync(id);
+    if (state?.val === null || state?.val === undefined || state.val === "") {
+      return null;
+    }
+
+    const date = parseForeignDate(state.val, new Date());
+    if (!date) {
+      this.log.warn(`State ${id} does not contain a valid date or time`);
+    }
+    return date;
   }
 
   private calculatePvCurrent(surplusPower: number): number {
@@ -1072,10 +1117,17 @@ class ChargeampsHalo extends Adapter {
     this.pvStopTimer = this.setTimeout(() => {
       this.pvStopTimer = undefined;
       void (async () => {
-        await this.remoteStopConnector(ref);
-        await this.setStateChangedAsync("automation.pv.lastAction", `${I18n.t("Remote stop")} (${reason})`, true);
-        await this.setStateChangedAsync("automation.pv.stopPending", false, true);
-        await this.poll();
+        await this.setStateChangedAsync("automation.pv.pausedByAutomation", true, true);
+        try {
+          await this.remoteStopConnector(ref);
+          await this.setStateChangedAsync("automation.pv.lastAction", `${I18n.t("Remote stop")} (${reason})`, true);
+          await this.setStateChangedAsync("automation.pv.stopPending", false, true);
+          await this.poll();
+        } catch (error) {
+          await this.setStateChangedAsync("automation.pv.pausedByAutomation", false, true);
+          await this.setStateChangedAsync("automation.pv.stopPending", false, true);
+          this.log.warn(`PV remote stop failed: ${formatError(error)}`);
+        }
       })();
     }, pvNumber(this.config.pvStopDelaySeconds, 90) * 1000);
     void this.setStateChangedAsync("automation.pv.stopPending", true, true);
@@ -1157,6 +1209,7 @@ class ChargeampsHalo extends Adapter {
     }
 
     await this.setStateChangedAsync("automation.pv.completionPending", false, true);
+    await this.setStateChangedAsync("automation.pv.pausedByAutomation", false, true);
     await this.setStateChangedAsync("automation.pv.lastAction", `${I18n.t("Set wallbox to standby")} (${reason})`, true);
     await this.setStateAsync("automation.pv.enabled", false, true);
     await this.setStateChangedAsync("automation.pv.active", false, true);
@@ -1212,8 +1265,14 @@ class ChargeampsHalo extends Adapter {
     return status === "Finishing";
   }
 
-  private isVehicleConnected(status: string | undefined): boolean {
-    return status === "Preparing" || status === "Connected" || status === "Charging" || status === "SuspendedEV";
+  private isVehicleConnected(status: string | undefined, pausedByAutomation = false): boolean {
+    return (
+      status === "Preparing"
+      || status === "Connected"
+      || status === "Charging"
+      || status === "SuspendedEV"
+      || (pausedByAutomation && status === "Finishing")
+    );
   }
 
   private async handleSetting(relativeId: string, value: ioBroker.StateValue): Promise<void> {
@@ -1327,6 +1386,41 @@ function formatDateTimeKey(date: Date): string {
   const hours = String(date.getHours()).padStart(2, "0");
   const minutes = String(date.getMinutes()).padStart(2, "0");
   return `${formatDayKey(date)} ${hours}:${minutes}`;
+}
+
+function parseForeignDate(value: ioBroker.StateValue, reference: Date): Date | null {
+  if (typeof value === "number") {
+    const timestamp = value < 100_000_000_000 ? value * 1000 : value;
+    const date = new Date(timestamp);
+    return Number.isNaN(date.getTime()) ? null : date;
+  }
+
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  if (/^\d+$/.test(trimmed)) {
+    const timestamp = Number(trimmed);
+    return parseForeignDate(timestamp, reference);
+  }
+
+  const time = parseScheduleTime(trimmed);
+  if (time) {
+    const date = new Date(reference);
+    date.setHours(time.hours, time.minutes, 0, 0);
+    return date;
+  }
+
+  const timestamp = Date.parse(trimmed);
+  if (!Number.isFinite(timestamp)) {
+    return null;
+  }
+  return new Date(timestamp);
 }
 
 function nextScheduleRun(now: Date, time: string | undefined, weekdays: number[]): Date | undefined {

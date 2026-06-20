@@ -27,6 +27,7 @@ declare global {
       pvStartDelaySeconds: number;
       pvStopDelaySeconds: number;
       pvCompletionStandbyDelaySeconds: number;
+      pvSunsetState: string;
       scheduleAutomationEnabled: boolean;
       scheduleChargePointId: string;
       scheduleConnectorId: number;

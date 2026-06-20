@@ -1,6 +1,6 @@
 {
   "name": "iobroker.chargeamps1",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "controll ChargeAmps Wallbox API",
   "author": {
     "name": "michipi85",
@@ -35,7 +35,6 @@
     "@iobroker/types": "^7.1.2",
     "@types/node": "^25.9.1",
     "eslint": "^9.39.4",
-    "eslint-plugin-react": "^7.37.5",
     "globals": "^17.6.0",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.60.0"
