@@ -1023,7 +1023,7 @@ class ChargeampsHalo extends Adapter {
 
     const date = parseForeignDate(state.val, new Date());
     if (!date) {
-      this.log.warn(`State ${id} does not contain a valid date or time`);
+      this.log.warn(`State ${id} does not contain a valid date or time: ${String(state.val)}`);
     }
     return date;
   }
@@ -1409,11 +1409,16 @@ function parseForeignDate(value: ioBroker.StateValue, reference: Date): Date | n
     return parseForeignDate(timestamp, reference);
   }
 
-  const time = parseScheduleTime(trimmed);
+  const time = parseClockTime(trimmed);
   if (time) {
     const date = new Date(reference);
-    date.setHours(time.hours, time.minutes, 0, 0);
+    date.setHours(time.hours, time.minutes, time.seconds, 0);
     return date;
+  }
+
+  const localDate = parseLocalDateTime(trimmed);
+  if (localDate) {
+    return localDate;
   }
 
   const timestamp = Date.parse(trimmed);
@@ -1445,7 +1450,19 @@ function nextScheduleRun(now: Date, time: string | undefined, weekdays: number[]
 }
 
 function parseScheduleTime(value: string | undefined): { hours: number; minutes: number } | undefined {
-  const match = (value || "").trim().match(/^([01]?\d|2[0-3]):([0-5]\d)$/);
+  const time = parseClockTime((value || "").trim());
+  if (!time) {
+    return undefined;
+  }
+
+  return {
+    hours: time.hours,
+    minutes: time.minutes,
+  };
+}
+
+function parseClockTime(value: string): { hours: number; minutes: number; seconds: number } | undefined {
+  const match = value.match(/^([01]?\d|2[0-3]):([0-5]\d)(?::([0-5]\d))?$/);
   if (!match) {
     return undefined;
   }
@@ -1453,7 +1470,34 @@ function parseScheduleTime(value: string | undefined): { hours: number; minutes:
   return {
     hours: Number(match[1]),
     minutes: Number(match[2]),
+    seconds: Number(match[3] || 0),
   };
+}
+
+function parseLocalDateTime(value: string): Date | null {
+  const match = value.match(
+    /^(\d{1,4})[.-](\d{1,2})[.-](\d{1,4}),?\s+([01]?\d|2[0-3]):([0-5]\d)(?::([0-5]\d))?$/,
+  );
+  if (!match) {
+    return null;
+  }
+
+  const first = Number(match[1]);
+  const second = Number(match[2]);
+  const third = Number(match[3]);
+  const year = match[1].length === 4 ? first : third;
+  const month = second;
+  const day = match[1].length === 4 ? third : first;
+  const date = new Date(year, month - 1, day, Number(match[4]), Number(match[5]), Number(match[6] || 0), 0);
+
+  if (
+    date.getFullYear() !== year
+    || date.getMonth() !== month - 1
+    || date.getDate() !== day
+  ) {
+    return null;
+  }
+  return date;
 }
 
 function rfidLength(rfid: string, format: string | undefined, configuredLength: number): number {
