@@ -81,6 +81,7 @@
   "When charging was paused by PV automation, the wallbox remains on until surplus returns or this sunset time is reached.": "Quando o carregamento foi pausado pela automação fotovoltaica, a Wallbox permanece ligada até que o excedente retorne ou esse horário de pôr do sol seja atingido.",
   "When connector status is Finishing or SuspendedEV, the adapter sets mode to Off after this delay.": "Quando o status do conector for Finishing ou SuspendedEV, o adaptador define o modo como Off após esse atraso.",
   "When connector status is Finishing, the adapter sets mode to Off after this delay.": "Quando o status do conector for Finishing, o adaptador definirá o modo como Off após esse atraso.",
+  "When connector status is SuspendedEV without a preceding automatic PV stop, the adapter sets mode to Off after this delay.": "Quando o status do conector é SuspendedEV sem uma parada PV automática anterior, o adaptador define o modo como Off após esse atraso.",
   "battery SOC too low": "SOC da bateria muito baixo",
   "charging completed, automation disabled": "carregamento concluído, automação desativada",
   "charging paused, waiting for surplus or sunset": "carregamento pausado, aguardando excedente ou pôr do sol",

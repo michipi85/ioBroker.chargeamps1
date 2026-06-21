@@ -81,6 +81,7 @@
   "When charging was paused by PV automation, the wallbox remains on until surplus returns or this sunset time is reached.": "Коли заряджання призупинено фотоелектричною автоматизацією, Wallbox залишається увімкненим, доки надлишок не повернеться або не буде досягнуто цього часу.",
   "When connector status is Finishing or SuspendedEV, the adapter sets mode to Off after this delay.": "Коли стан роз’єму Finishing або SuspendedEV, адаптер встановлює режим Off після цієї затримки.",
   "When connector status is Finishing, the adapter sets mode to Off after this delay.": "Коли стан роз’єму Finishing, адаптер встановлює режим Off після цієї затримки.",
+  "When connector status is SuspendedEV without a preceding automatic PV stop, the adapter sets mode to Off after this delay.": "Якщо стан роз’єму SuspendedEV без попередньої автоматичної зупинки PV, адаптер встановлює режим Off після цієї затримки.",
   "battery SOC too low": "SOC батареї занадто низький",
   "charging completed, automation disabled": "зарядка завершена, автоматика вимкнена",
   "charging paused, waiting for surplus or sunset": "заряджання призупинено, очікується надлишок або захід сонця",
