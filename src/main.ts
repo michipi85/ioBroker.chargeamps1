@@ -1262,7 +1262,7 @@ class ChargeampsHalo extends Adapter {
   }
 
   private isChargingComplete(status: string | undefined): boolean {
-    return status === "Finishing";
+    return status === "SuspendedEV";
   }
 
   private isVehicleConnected(status: string | undefined, pausedByAutomation = false): boolean {
@@ -1270,8 +1270,7 @@ class ChargeampsHalo extends Adapter {
       status === "Preparing"
       || status === "Connected"
       || status === "Charging"
-      || status === "SuspendedEV"
-      || (pausedByAutomation && status === "Finishing")
+      || (pausedByAutomation && (status === "Finishing" || status === "SuspendedEV"))
     );
   }
 

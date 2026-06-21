@@ -983,14 +983,13 @@ class ChargeampsHalo extends adapter_core_1.Adapter {
         void this.setStateChangedAsync("automation.pv.completionPending", false, true);
     }
     isChargingComplete(status) {
-        return status === "Finishing";
+        return status === "SuspendedEV";
     }
     isVehicleConnected(status, pausedByAutomation = false) {
         return (status === "Preparing"
             || status === "Connected"
             || status === "Charging"
-            || status === "SuspendedEV"
-            || (pausedByAutomation && status === "Finishing"));
+            || (pausedByAutomation && (status === "Finishing" || status === "SuspendedEV")));
     }
     async handleSetting(relativeId, value) {
         const parts = relativeId.split(".");

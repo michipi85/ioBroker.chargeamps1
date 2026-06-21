@@ -79,7 +79,7 @@
   "Voltage per phase": "Spannung pro Phase",
   "Wednesday": "Mittwoch",
   "When charging was paused by PV automation, the wallbox remains on until surplus returns or this sunset time is reached.": "Wenn die PV-Automatik das Laden pausiert hat, bleibt die Wallbox eingeschaltet, bis wieder Überschuss vorhanden ist oder dieser Sonnenuntergang erreicht wird.",
-  "When connector status is Finishing, the adapter sets mode to Off after this delay.": "Wenn der Connector-Status „Finishing“ lautet, setzt der Adapter den Modus nach dieser Verzögerung auf „Off“.",
+  "When connector status is SuspendedEV without a preceding automatic PV stop, the adapter sets mode to Off after this delay.": "Wenn der Connector-Status ohne vorherigen automatischen PV-Stopp „SuspendedEV“ lautet, setzt der Adapter den Modus nach dieser Verzögerung auf „Off“.",
   "battery SOC too low": "Batterieladezustand zu niedrig",
   "charging completed, automation disabled": "Ladevorgang abgeschlossen, Automatisierung deaktiviert",
   "charging paused, waiting for surplus or sunset": "Laden pausiert, warte auf Überschuss oder Sonnenuntergang",
