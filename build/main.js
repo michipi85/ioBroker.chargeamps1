@@ -666,11 +666,8 @@ class ChargeampsHalo extends adapter_core_1.Adapter {
             const stopSurplus = pvNumber(this.config.pvStopSurplusWatts, 500);
             const connectorStatus = this.connectorStatuses.get(connectorKey(ref.chargePointId, ref.connectorId));
             const isCharging = connectorStatus?.status === "Charging";
-            let pausedByAutomation = Boolean((await this.getStateAsync("automation.pv.pausedByAutomation"))?.val);
-            if (isCharging && pausedByAutomation) {
-                pausedByAutomation = false;
-                await this.setStateChangedAsync("automation.pv.pausedByAutomation", false, true);
-            }
+            const pausedByAutomation = Boolean((await this.getStateAsync("automation.pv.pausedByAutomation"))?.val);
+            const isActivelyCharging = isCharging && !pausedByAutomation;
             if (this.isChargingComplete(connectorStatus?.status) && !pausedByAutomation) {
                 this.clearPvStartTimer();
                 this.clearPvStopTimer();
@@ -679,7 +676,7 @@ class ChargeampsHalo extends adapter_core_1.Adapter {
                 return;
             }
             this.clearPvCompletionTimer();
-            if (pausedByAutomation && state.sunset && Date.now() >= state.sunset.getTime()) {
+            if (this.isAfterSunset(state) && (pausedByAutomation || connectorStatus?.status === "Finishing")) {
                 await this.applyPvStandby(ref, "sunset reached");
                 return;
             }
@@ -694,7 +691,7 @@ class ChargeampsHalo extends adapter_core_1.Adapter {
             if (state.surplusPower >= startSurplus && socOk) {
                 this.clearPvStopTimer();
                 await this.applyPvCurrent(ref, state.calculatedCurrent, reason);
-                if (!isCharging) {
+                if (!isActivelyCharging) {
                     this.schedulePvStart(ref, state.calculatedCurrent);
                     await this.setStateChangedAsync("automation.pv.decision", adapter_core_1.I18n.t("start pending"), true);
                 }
@@ -706,7 +703,7 @@ class ChargeampsHalo extends adapter_core_1.Adapter {
             }
             if (state.surplusPower <= stopSurplus || !socOk) {
                 this.clearPvStartTimer();
-                if (isCharging) {
+                if (isActivelyCharging) {
                     this.schedulePvStop(ref, socOk ? "surplus too low" : "battery SOC too low");
                 }
                 else {
@@ -720,7 +717,7 @@ class ChargeampsHalo extends adapter_core_1.Adapter {
                 return;
             }
             this.clearPvStartTimer();
-            if (!isCharging) {
+            if (!isActivelyCharging) {
                 this.clearPvStopTimer();
             }
             await this.setStateChangedAsync("automation.pv.decision", this.pvStopTimer
@@ -852,6 +849,9 @@ class ChargeampsHalo extends adapter_core_1.Adapter {
                 await this.setStateChangedAsync("automation.pv.lastAction", started
                     ? `${adapter_core_1.I18n.t("Remote start with")} ${freshCurrent} A (${adapter_core_1.I18n.t("PV surplus stable")})`
                     : `${adapter_core_1.I18n.t("Remote start skipped with")} ${freshCurrent} A (${adapter_core_1.I18n.t("missing RFID")})`, true);
+                if (started) {
+                    await this.setStateChangedAsync("automation.pv.pausedByAutomation", false, true);
+                }
                 await this.setStateChangedAsync("automation.pv.startPending", false, true);
                 await this.poll();
             })();
@@ -984,6 +984,9 @@ class ChargeampsHalo extends adapter_core_1.Adapter {
     }
     isChargingComplete(status) {
         return status === "SuspendedEV";
+    }
+    isAfterSunset(state) {
+        return Boolean(state.sunset && Date.now() >= state.sunset.getTime());
     }
     isVehicleConnected(status, pausedByAutomation = false) {
         return (status === "Preparing"
