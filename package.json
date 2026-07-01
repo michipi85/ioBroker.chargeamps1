@@ -37,7 +37,7 @@
     "eslint": "^9.39.4",
     "globals": "^17.6.0",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.60.0"
+    "typescript-eslint": "^8.62.1"
   },
   "overrides": {
     "serialize-javascript": "^7.0.5"
