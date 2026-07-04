@@ -100,8 +100,7 @@ At the configured local time on the selected weekdays, the adapter sets `setting
 - improve schedule handling with stop times if needed
 
 ## Changelog
-
-### **WORK IN PROGRESS**
+### 1.0.0-beta.0 (2026-07-04)
 
 - fix ESLint config dependency for CI
 - improve PV pause handling after automatic remoteStop
