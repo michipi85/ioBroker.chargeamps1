@@ -103,6 +103,10 @@ At the configured local time on the selected weekdays, the adapter sets `setting
 
 ### **WORK IN PROGRESS**
 
+- fix ESLint config dependency for CI
+- improve PV pause handling after automatic remoteStop
+- handle Finishing at sunset during PV automation
+
 ### v0.4.1 (2026-06-20)
 
 - add pvSunsetState
