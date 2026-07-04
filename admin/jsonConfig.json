@@ -125,7 +125,6 @@
         "pvAutomationEnabled": {
           "type": "checkbox",
           "label": "Enable PV automation",
-          "help": "Creates automation states and allows the adapter to control connector mode and maximum current from PV surplus.",
           "newLine": true
         },
         "pvChargePointId": {
@@ -151,8 +150,8 @@
         },
         "pvGridPowerState": {
           "type": "objectId",
-          "label": "Grid power state ID",
-          "help": "State with current grid power in W. By default negative values mean feed-in/export.",
+          "label": "Grid power state ID in W",
+          "help": "By default negative values mean feed-in/export.",
           "newLine": true,
           "xs": 12,
           "sm": 12,
@@ -162,13 +161,12 @@
         },
         "pvGridPowerExportIsNegative": {
           "type": "checkbox",
-          "label": "Negative grid power means feed-in",
-          "newLine": true
+          "label": "Negative grid power means feed-in"
         },
         "pvBatterySocState": {
           "type": "objectId",
           "label": "Battery SOC state ID",
-          "help": "Optional state with battery state of charge in percent.",
+          "help": "Optional state with house battery state of charge in percent.",
           "newLine": true,
           "xs": 12,
           "sm": 4,
@@ -234,7 +232,7 @@
         "pvStartSurplusWatts": {
           "type": "number",
           "label": "Start surplus in W",
-          "help": "PV automation switches the connector on after this surplus is stable for the start delay.",
+          "help": "Minimum surplus for charging start.",
           "newLine": true,
           "xs": 12,
           "sm": 4,
@@ -245,7 +243,7 @@
         "pvStopSurplusWatts": {
           "type": "number",
           "label": "Stop surplus in W",
-          "help": "PV automation pauses charging with remoteStop when surplus is at or below this value for the stop delay.",
+          "help": "Minimum surplus for a charging stop.",
           "xs": 12,
           "sm": 4,
           "md": 4,
@@ -275,8 +273,8 @@
         },
         "pvCompletionStandbyDelaySeconds": {
           "type": "number",
-          "label": "Standby delay after completed charging in seconds",
-          "help": "When connector status is SuspendedEV without a preceding automatic PV stop, the adapter sets mode to Off after this delay.",
+          "label": "Standby delay after charging in seconds",
+          "help": "Time until the wallbox enters standby mode when charging is complete.",
           "min": 0,
           "xs": 12,
           "sm": 3,
@@ -287,7 +285,7 @@
         "pvSunsetState": {
           "type": "objectId",
           "label": "Sunset state ID",
-          "help": "When charging was paused by PV automation, the wallbox remains on until surplus returns or this sunset time is reached.",
+          "help": "If, after the pause, no surplus is generated until sunset, the wallbox is put into standby mode.",
           "newLine": true,
           "xs": 12,
           "sm": 12,
