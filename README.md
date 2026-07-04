@@ -101,6 +101,8 @@ At the configured local time on the selected weekdays, the adapter sets `setting
 
 ## Changelog
 
+### **WORK IN PROGRESS**
+
 ### v0.4.1 (2026-06-20)
 
 - add pvSunsetState
