@@ -99,7 +99,14 @@ jobs:
       - name: Publish package to npm
         run: |
           npm install -g npm@latest
-          npm publish
+          VERSION="${{ steps.extract_release.outputs.VERSION }}"
+          if [[ "$VERSION" == *-* ]]; then
+            DIST_TAG="${VERSION#*-}"
+            DIST_TAG="${DIST_TAG%%.*}"
+            npm publish --tag "$DIST_TAG"
+          else
+            npm publish
+          fi
 
       - name: Create Github Release
         uses: softprops/action-gh-release@v3
