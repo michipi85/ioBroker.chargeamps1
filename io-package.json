@@ -1,12 +1,12 @@
 {
   "common": {
     "name": "chargeamps1",
-    "version": "0.4.1",
+    "version": "1.0.0",
     "news": {
-      "0.4.1": {
-        "en": "Minor update with bug fixes and improvements.",
-        "de": "Kleine Aktualisierung mit Bugfixes und Verbesserungen.",
-        "ru": "Малое обновление с исправлениями ошибок и улучшениями.",
+      "1.0.0": {
+        "en": "Major release with new features and improvements.",
+        "de": "Hauptrelease mit neuen Funktionen und Verbesserungen.",
+        "ru": "Главный выпуск с новыми функциями и улучшениями.",
         "pt": "Atualização menor com correções de bugs e melhorias.",
         "nl": "Kleine update met bugfixes en verbeteringen.",
         "fr": "Mise à jour mineure avec corrections de bugs et améliorations.",
