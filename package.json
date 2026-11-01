@@ -34,7 +34,7 @@
     "@iobroker/adapter-react-v5": "^8.3.3",
     "@iobroker/testing": "^5.3.0",
     "@iobroker/types": "^7.2.3",
-    "@types/node": "^26.6.3",
+    "@types/node": "^26.6.6",
     "eslint": "^10.11.0",
     "globals": "^17.13.0",
     "typescript": "^6.0.3",
