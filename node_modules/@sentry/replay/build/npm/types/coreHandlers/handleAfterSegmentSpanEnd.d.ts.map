@@ -1,1 +1,0 @@
-{"version":3,"file":"handleAfterSegmentSpanEnd.d.ts","sourceRoot":"","sources":["../../../../src/coreHandlers/handleAfterSegmentSpanEnd.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,EAAE,IAAI,EAAE,MAAM,cAAc,CAAC;AAEzC,OAAO,KAAK,EAAE,eAAe,EAAE,MAAM,UAAU,CAAC;AAGhD,KAAK,2BAA2B,GAAG,CAAC,WAAW,EAAE,IAAI,KAAK,IAAI,CAAC;AAE/D,wBAAgB,yBAAyB,CAAC,MAAM,EAAE,eAAe,GAAG,2BAA2B,CAW9F"}
