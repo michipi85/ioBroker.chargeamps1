@@ -43,15 +43,8 @@
       "uk": "Контроль API Wallbox API Wallbox",
       "zh-cn": "控制Chargeamps Wallbox API"
     },
-    "authors": [
-      "michipi85 <sammer.michael.ms@gmail.com>"
-    ],
-    "keywords": [
-      "ioBroker",
-      "charge amps",
-      "wallbox",
-      "halo"
-    ],
+    "authors": ["michipi85 <sammer.michael.ms@gmail.com>"],
+    "keywords": ["ioBroker", "charge amps", "wallbox", "halo"],
     "licenseInformation": {
       "type": "free",
       "license": "MIT"
@@ -83,14 +76,8 @@
       }
     ]
   },
-  "encryptedNative": [
-    "password",
-    "apiKey"
-  ],
-  "protectedNative": [
-    "password",
-    "apiKey"
-  ],
+  "encryptedNative": ["password", "apiKey"],
+  "protectedNative": ["password", "apiKey"],
   "native": {
     "email": "",
     "password": "",
@@ -109,26 +96,26 @@
     "pvMinBatterySoc": 20,
     "pvMinCurrent": 6,
     "pvMaxCurrent": 16,
-    "pvVoltage": 240,
+    "pvVoltage": 230,
     "pvPhases": 3,
     "pvStartSurplusWatts": 4500,
     "pvStopSurplusWatts": 500,
-    "pvStartDelaySeconds": 180,
+    "pvStartDelaySeconds": 120,
     "pvStopDelaySeconds": 90,
-    "pvCompletionStandbyDelaySeconds": 60,
+    "pvCompletionStandbyDelaySeconds": 360,
     "pvSunsetState": "javascript.0.variables.astro.sunset",
     "scheduleAutomationEnabled": false,
     "scheduleChargePointId": "",
     "scheduleConnectorId": 1,
-    "scheduleTime": "22:00",
+    "scheduleTime": "02:00",
     "scheduleCurrent": 16,
     "scheduleMonday": true,
-    "scheduleTuesday": true,
-    "scheduleWednesday": true,
+    "scheduleTuesday": false,
+    "scheduleWednesday": false,
     "scheduleThursday": true,
-    "scheduleFriday": true,
-    "scheduleSaturday": true,
-    "scheduleSunday": true
+    "scheduleFriday": false,
+    "scheduleSaturday": false,
+    "scheduleSunday": false
   },
   "objects": [
     {
