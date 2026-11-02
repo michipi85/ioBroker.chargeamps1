@@ -103,6 +103,9 @@ At the configured local time on the selected weekdays, the adapter sets `setting
 
 ### **WORK IN PROGRESS**
 
+- bug fixes
+- updated-dependencies
+
 ### 1.0.0-beta.0 (2026-07-04)
 
 - fix ESLint config dependency for CI
