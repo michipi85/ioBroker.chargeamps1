@@ -662,8 +662,9 @@ class ChargeampsHalo extends adapter_core_1.Adapter {
                 return;
             }
             const socOk = state.batterySoc === null || state.batterySoc >= pvNumber(this.config.pvMinBatterySoc, 20);
-            const startSurplus = pvNumber(this.config.pvStartSurplusWatts, 4500);
-            const stopSurplus = pvNumber(this.config.pvStopSurplusWatts, 500);
+            const minimumChargingPower = this.minimumChargingPowerWatts();
+            const startSurplus = minimumChargingPower + pvNumber(this.config.pvStartSurplusOffsetWatts, 200);
+            const stopSurplus = minimumChargingPower + pvNumber(this.config.pvStopSurplusOffsetWatts, 0);
             const connectorStatus = this.connectorStatuses.get(connectorKey(ref.chargePointId, ref.connectorId));
             const isCharging = connectorStatus?.status === "Charging";
             const pausedByAutomation = Boolean((await this.getStateAsync("automation.pv.pausedByAutomation"))?.val);
@@ -793,8 +794,13 @@ class ChargeampsHalo extends adapter_core_1.Adapter {
     calculatePvCurrent(surplusPower) {
         const minCurrent = pvNumber(this.config.pvMinCurrent, 6);
         const maxCurrent = Math.max(minCurrent, pvNumber(this.config.pvMaxCurrent, 16));
-        const wattsPerAmp = Math.max(1, pvNumber(this.config.pvVoltage, 240) * pvNumber(this.config.pvPhases, 3));
-        return clamp(Math.floor(surplusPower / wattsPerAmp), minCurrent, maxCurrent);
+        return clamp(Math.floor(surplusPower / this.pvWattsPerAmp()), minCurrent, maxCurrent);
+    }
+    minimumChargingPowerWatts() {
+        return pvNumber(this.config.pvMinCurrent, 6) * this.pvWattsPerAmp();
+    }
+    pvWattsPerAmp() {
+        return Math.max(1, pvNumber(this.config.pvVoltage, 240) * pvNumber(this.config.pvPhases, 3));
     }
     currentChargingPowerWatts(ref) {
         if (!ref) {

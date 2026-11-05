@@ -41,13 +41,13 @@ The PV automation is optional and disabled by default. It controls the configure
 - `pvMinBatterySoc`: prevents PV charging when battery SOC is below this value
 - `pvMinCurrent` / `pvMaxCurrent`: current limits in A
 - `pvVoltage` / `pvPhases`: used to calculate current from surplus power
-- `pvStartSurplusWatts`: surplus required before switching the connector to `On`
-- `pvStopSurplusWatts`: surplus threshold for pausing charging with `remoteStop`
+- `pvStartSurplusOffsetWatts`: start surplus offset in W, added to the minimum charging power
+- `pvStopSurplusOffsetWatts`: stop surplus offset in W, added to the minimum charging power
 - `pvStartDelaySeconds` / `pvStopDelaySeconds`: debounce delays before changing mode
 - `pvCompletionStandbyDelaySeconds`: delay before switching the wallbox to standby after connector status `SuspendedEV`
 - `pvSunsetState`: state containing today's sunset, for example `javascript.0.variables.astro.sunset`
 
-With the default values, the automation expects negative grid power for feed-in, starts the charging session after stable surplus of 4500 W, pauses it when surplus drops to 500 W or less, and regulates between 6 A and 16 A. Because Charge Amps requires RFID for `remoteStart`, configure RFID when PV automation should be able to resume charging automatically. Without RFID, the adapter can switch the wallbox to `On` and pause with `remoteStop`, but automatic resume with `remoteStart` is skipped.
+The effective thresholds are calculated as `pvMinCurrent × pvVoltage × pvPhases + surplus offset`. With the default values and 6 A, 230 V, and three phases, PV automation starts after stable surplus of 4340 W and pauses when surplus drops to 4140 W or less. Because Charge Amps requires RFID for `remoteStart`, configure RFID when PV automation should be able to resume charging automatically. Without RFID, the adapter can switch the wallbox to `On` and pause with `remoteStop`, but automatic resume with `remoteStart` is skipped.
 When PV automation pauses charging because surplus is too low, the wallbox remains `On`. A following `Finishing` or `SuspendedEV` status is ignored as a completion signal when it follows the adapter's own `remoteStop`. Charging can resume when enough surplus returns. At sunset, the wallbox is switched to `Off` and PV automation is disabled.
 
 When charging reaches `SuspendedEV` without a preceding automatic PV stop, the adapter treats this as a fully charged vehicle. It switches the wallbox to standby after the configured delay and disables PV automation. `Finishing` is no longer used as the completion signal.
@@ -100,6 +100,11 @@ At the configured local time on the selected weekdays, the adapter sets `setting
 - improve schedule handling with stop times if needed
 
 ## Changelog
+
+### WORK IN PROGRESS
+
+- start/stop surplus offset
+
 ### 1.0.0 (2026-11-02)
 
 - bug fixes

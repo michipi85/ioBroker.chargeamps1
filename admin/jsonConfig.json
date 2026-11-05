@@ -229,10 +229,11 @@
           "lg": 3,
           "xl": 3
         },
-        "pvStartSurplusWatts": {
+        "pvStartSurplusOffsetWatts": {
           "type": "number",
-          "label": "Start surplus in W",
-          "help": "Minimum surplus for charging start.",
+          "label": "Start surplus offset in W",
+          "help": "Added to minimum charging power to calculate the start threshold.",
+          "min": 0,
           "newLine": true,
           "xs": 12,
           "sm": 4,
@@ -240,10 +241,11 @@
           "lg": 3,
           "xl": 3
         },
-        "pvStopSurplusWatts": {
+        "pvStopSurplusOffsetWatts": {
           "type": "number",
-          "label": "Stop surplus in W",
-          "help": "Minimum surplus for a charging stop.",
+          "label": "Stop surplus offset in W",
+          "help": "Added to minimum charging power to calculate the stop threshold.",
+          "min": 0,
           "xs": 12,
           "sm": 4,
           "md": 4,

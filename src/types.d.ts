@@ -22,8 +22,8 @@ declare global {
       pvMaxCurrent: number;
       pvVoltage: number;
       pvPhases: number;
-      pvStartSurplusWatts: number;
-      pvStopSurplusWatts: number;
+      pvStartSurplusOffsetWatts: number;
+      pvStopSurplusOffsetWatts: number;
       pvStartDelaySeconds: number;
       pvStopDelaySeconds: number;
       pvCompletionStandbyDelaySeconds: number;
