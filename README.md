@@ -101,7 +101,7 @@ At the configured local time on the selected weekdays, the adapter sets `setting
 
 ## Changelog
 
-### WORK IN PROGRESS
+### **WORK IN PROGRESS**
 
 - start/stop surplus offset
 
