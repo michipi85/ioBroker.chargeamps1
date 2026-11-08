@@ -100,8 +100,7 @@ At the configured local time on the selected weekdays, the adapter sets `setting
 - improve schedule handling with stop times if needed
 
 ## Changelog
-
-### **WORK IN PROGRESS**
+### 1.1.1 (2026-11-08)
 
 - bug fix schedule
 
