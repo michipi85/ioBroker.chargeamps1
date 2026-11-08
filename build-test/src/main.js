@@ -34,8 +34,9 @@ class ChargeampsHalo extends adapter_core_1.Adapter {
         await this.ensureBaseObjects();
         await this.deleteObsoleteSessionObjects();
         await this.setState("info.connection", false, true);
-        await this.setState("automation.pv.enabled", Boolean(this.config.pvAutomationEnabled), true);
-        await this.setState("automation.schedule.enabled", Boolean(this.config.scheduleAutomationEnabled), true);
+        const scheduleEnabled = Boolean(this.config.scheduleAutomationEnabled);
+        await this.setState("automation.pv.enabled", Boolean(this.config.pvAutomationEnabled) && !scheduleEnabled, true);
+        await this.setState("automation.schedule.enabled", scheduleEnabled, true);
         if (!this.config.email || !this.config.password || !this.config.apiKey) {
             this.log.warn("Please configure email, password and API key.");
             return;
@@ -460,6 +461,11 @@ class ChargeampsHalo extends adapter_core_1.Adapter {
     async handlePvAutomationEnabledChange(enabled) {
         await this.setStateAsync("automation.pv.enabled", enabled, true);
         if (enabled) {
+            if (await this.isScheduleAutomationEnabled()) {
+                await this.setStateAsync("automation.pv.enabled", false, true);
+                await this.disablePvAutomation(adapter_core_1.I18n.t("PV automation disabled because schedule automation is enabled"));
+                return;
+            }
             await this.evaluatePvAutomation("enabled changed");
             return;
         }
@@ -475,6 +481,8 @@ class ChargeampsHalo extends adapter_core_1.Adapter {
     async handleScheduleAutomationEnabledChange(enabled) {
         await this.setStateAsync("automation.schedule.enabled", enabled, true);
         if (enabled) {
+            await this.setStateAsync("automation.pv.enabled", false, true);
+            await this.disablePvAutomation(adapter_core_1.I18n.t("PV automation disabled because schedule automation is enabled"));
             await this.scheduleNextScheduledCharge();
             return;
         }
@@ -483,10 +491,13 @@ class ChargeampsHalo extends adapter_core_1.Adapter {
         await this.setStateChangedAsync("automation.schedule.nextRun", "", true);
         await this.setStateChangedAsync("automation.schedule.lastAction", adapter_core_1.I18n.t("Schedule automation disabled manually"), true);
     }
+    async isScheduleAutomationEnabled() {
+        const enabledState = await this.getStateAsync("automation.schedule.enabled");
+        return Boolean(enabledState?.val) && Boolean(this.config.scheduleAutomationEnabled);
+    }
     async scheduleNextScheduledCharge() {
         this.clearScheduleTimer();
-        const enabledState = await this.getStateAsync("automation.schedule.enabled");
-        const enabled = Boolean(enabledState?.val) && Boolean(this.config.scheduleAutomationEnabled);
+        const enabled = await this.isScheduleAutomationEnabled();
         if (!enabled) {
             await this.setStateChangedAsync("automation.schedule.active", false, true);
             await this.setStateChangedAsync("automation.schedule.nextRun", "", true);
@@ -735,7 +746,7 @@ class ChargeampsHalo extends adapter_core_1.Adapter {
     }
     async readPvAutomationState(ref) {
         const enabledState = await this.getStateAsync("automation.pv.enabled");
-        const enabled = Boolean(enabledState?.val) && Boolean(this.config.pvAutomationEnabled);
+        const enabled = Boolean(enabledState?.val) && Boolean(this.config.pvAutomationEnabled) && !(await this.isScheduleAutomationEnabled());
         const gridPowerStateId = this.config.pvGridPowerState?.trim();
         if (!enabled || !gridPowerStateId) {
             return {

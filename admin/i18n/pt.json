@@ -39,6 +39,7 @@
   "Optional. Leave empty if this adapter has only one connector.": "Opcional. Deixe em branco se este adaptador tiver apenas um conector.",
   "PV automation": "Automação fotovoltaica",
   "PV automation active": "Automação fotovoltaica ativa",
+  "PV automation disabled because schedule automation is enabled": "Automação fotovoltaica desativada porque a automação de programação está ativada",
   "PV automation disabled by manual remote stop": "Automação fotovoltaica desativada por parada remota manual",
   "PV automation disabled manually": "Automação fotovoltaica desativada manualmente",
   "PV automation pauses charging with remoteStop when surplus is at or below this value for the stop delay.": "A automação fotovoltaica pausa o carregamento com remoteStop quando o excedente é igual ou inferior a esse valor para o atraso de parada.",

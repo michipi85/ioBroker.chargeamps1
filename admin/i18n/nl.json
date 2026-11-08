@@ -39,6 +39,7 @@
   "Optional. Leave empty if this adapter has only one connector.": "Optioneel. Laat dit leeg als deze adapter slechts één connector heeft.",
   "PV automation": "PV-automatisering",
   "PV automation active": "PV-automatisering actief",
+  "PV automation disabled because schedule automation is enabled": "PV-automatisering uitgeschakeld omdat planningsautomatisering is ingeschakeld",
   "PV automation disabled by manual remote stop": "PV-automatisering uitgeschakeld door handmatige stop op afstand",
   "PV automation disabled manually": "PV-automatisering handmatig uitgeschakeld",
   "PV automation pauses charging with remoteStop when surplus is at or below this value for the stop delay.": "PV-automatisering pauzeert het opladen met remoteStop wanneer het overschot op of onder deze waarde voor de stopvertraging ligt.",

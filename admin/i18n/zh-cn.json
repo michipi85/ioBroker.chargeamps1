@@ -39,6 +39,7 @@
   "Optional. Leave empty if this adapter has only one connector.": "选修的。如果此适配器只有一个连接器，请留空。",
   "PV automation": "光伏自动化",
   "PV automation active": "光伏自动化活跃",
+  "PV automation disabled because schedule automation is enabled": "由于启用了计划自动化，PV 自动化被禁用",
   "PV automation disabled by manual remote stop": "通过手动远程停止禁用光伏自动化",
   "PV automation disabled manually": "手动禁用光伏自动化",
   "PV automation pauses charging with remoteStop when surplus is at or below this value for the stop delay.": "当剩余电量等于或低于该停止延迟值时，PV 自动化将通过 RemoteStop 暂停充电。",

@@ -54,7 +54,7 @@ When charging reaches `SuspendedEV` without a preceding automatic PV stop, the a
 
 ### Schedule automation
 
-The schedule automation is optional and disabled by default. Configure the target connector, time, weekdays and charging current in the adapter settings. Enable or disable the runtime schedule with `automation.schedule.enabled`.
+The schedule automation is optional and disabled by default. Configure the target connector, time, weekdays and charging current in the adapter settings. Enable or disable the runtime schedule with `automation.schedule.enabled`. Enabling the schedule disables `automation.pv.enabled`; PV automation cannot be enabled while the schedule is active.
 
 At the configured local time on the selected weekdays, the adapter sets `settings.maxCurrent`, switches the connector to `On` and sends `remoteStart`. RFID must be configured for the scheduled `remoteStart`, just like for PV automation.
 
@@ -100,6 +100,11 @@ At the configured local time on the selected weekdays, the adapter sets `setting
 - improve schedule handling with stop times if needed
 
 ## Changelog
+
+### **WORK IN PROGRESS**
+
+- bug fix schedule
+
 ### 1.1.0 (2026-11-05)
 
 - start/stop surplus offset

@@ -39,6 +39,7 @@
   "Optional. Leave empty if this adapter has only one connector.": "Optional. Lassen Sie das Feld leer, wenn dieser Adapter nur einen Anschluss hat.",
   "PV automation": "PV-Automatisierung",
   "PV automation active": "PV-Automatisierung aktiv",
+  "PV automation disabled because schedule automation is enabled": "PV-Automatisierung deaktiviert, weil die Zeitplan-Automatisierung aktiviert ist",
   "PV automation disabled by manual remote stop": "PV-Automatisierung durch manuellen Fernstopp deaktiviert",
   "PV automation disabled manually": "PV-Automatisierung manuell deaktiviert",
   "PV automation pauses charging with remoteStop when surplus is at or below this value for the stop delay.": "Die PV-Automatik pausiert das Laden per Fernstopp, wenn der Überschuss für die Stoppverzögerung auf oder unter diesem Wert liegt.",

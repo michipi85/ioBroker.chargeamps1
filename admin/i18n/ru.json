@@ -39,6 +39,7 @@
   "Optional. Leave empty if this adapter has only one connector.": "Необязательный. Оставьте пустым, если у этого адаптера только один разъем.",
   "PV automation": "фотоэлектрическая автоматизация",
   "PV automation active": "Фотоэлектрическая автоматизация активна",
+  "PV automation disabled because schedule automation is enabled": "Автоматизация фотоэлектрических систем отключена, поскольку автоматизация расписания включена",
   "PV automation disabled by manual remote stop": "Автоматизация фотоэлектрических систем отключена ручной дистанционной остановкой",
   "PV automation disabled manually": "Автоматизация фотоэлектрических систем отключена вручную",
   "PV automation pauses charging with remoteStop when surplus is at or below this value for the stop delay.": "PV-автоматизация приостанавливает зарядку с помощью RemoteStop, когда избыток энергии равен или ниже этого значения для задержки остановки.",

@@ -1,8 +1,22 @@
 {
+  "i18n": true,
   "common": {
     "name": "chargeamps1",
-    "version": "1.0.0",
+    "version": "1.1.1",
     "news": {
+      "1.1.1": {
+        "en": "Minor update with bug fixes and improvements.",
+        "de": "Kleine Aktualisierung mit Bugfixes und Verbesserungen.",
+        "ru": "Малое обновление с исправлениями ошибок и улучшениями.",
+        "pt": "Pequena atualização com correções de bugs e melhorias.",
+        "nl": "Kleine update met bugfixes en verbeteringen.",
+        "fr": "Mise à jour mineure avec corrections de bugs et améliorations.",
+        "it": "Aggiornamento minore con correzioni di bug e miglioramenti.",
+        "es": "Actualización menor con correcciones de errores y mejoras.",
+        "pl": "Drobna aktualizacja z poprawkami błędów i ulepszeniami.",
+        "uk": "Незначне оновлення з виправленнями помилок і покращеннями.",
+        "zh-cn": "包含错误修复和改进的小更新。"
+      },
       "1.0.0": {
         "en": "Major release with new features and improvements.",
         "de": "Hauptrelease mit neuen Funktionen und Verbesserungen.",

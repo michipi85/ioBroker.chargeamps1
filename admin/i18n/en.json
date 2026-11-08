@@ -16,6 +16,7 @@
   "For HEX values, enter the byte length, e.g. 4 for an 8-character HEX RFID. Leave 0 to calculate automatically.": "For HEX values, enter the byte length, e.g. 4 for an 8-character HEX RFID. Leave 0 to calculate automatically.",
   "Decimal": "Decimal",
   "PV automation": "PV automation",
+  "PV automation disabled because schedule automation is enabled": "PV automation disabled because schedule automation is enabled",
   "Enable PV automation": "Enable PV automation",
   "Charge point ID": "Charge point ID",
   "Optional. Leave empty if this adapter has only one connector.": "Optional. Leave empty if this adapter has only one connector.",

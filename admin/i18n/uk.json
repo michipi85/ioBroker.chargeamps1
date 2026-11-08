@@ -39,6 +39,7 @@
   "Optional. Leave empty if this adapter has only one connector.": "Додатково. Залиште порожнім, якщо цей адаптер має лише один роз’єм.",
   "PV automation": "Автоматика PV",
   "PV automation active": "Активна фотоелектрична автоматизація",
+  "PV automation disabled because schedule automation is enabled": "Автоматизацію PV вимкнено, оскільки автоматизацію за розкладом увімкнено",
   "PV automation disabled by manual remote stop": "Автоматику PV вимкнено шляхом ручної дистанційної зупинки",
   "PV automation disabled manually": "Автоматику PV вимкнено вручну",
   "PV automation pauses charging with remoteStop when surplus is at or below this value for the stop delay.": "Автоматика PV призупиняє зарядку за допомогою віддаленої зупинки, коли надлишок досягає або нижче цього значення для затримки зупинки.",
