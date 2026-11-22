@@ -111,6 +111,8 @@
     "apiKey": "",
     "apiBaseUrl": "https://eapi.charge.space",
     "pollInterval": 60,
+    "connectionMode": "cloud",
+    "ocppPort": 9220,
     "rfid": "",
     "rfidFormat": "Hex",
     "rfidLength": 0,

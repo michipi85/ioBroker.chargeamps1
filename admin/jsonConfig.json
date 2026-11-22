@@ -9,6 +9,32 @@
       "type": "panel",
       "label": "Account settings",
       "items": {
+        "connectionMode": {
+          "type": "select",
+          "label": "Connection mode",
+          "options": [
+            { "label": "Charge Amps cloud API", "value": "cloud" },
+            { "label": "Local OCPP 1.6J", "value": "ocpp" }
+          ],
+          "newLine": true,
+          "xs": 12,
+          "sm": 12,
+          "md": 6,
+          "lg": 4,
+          "xl": 4
+        },
+        "ocppPort": {
+          "type": "number",
+          "label": "OCPP server port",
+          "help": "Configure the wallbox to connect to ws://<ioBroker-IP>:<port>/<ChargePointId>.",
+          "min": 1,
+          "max": 65535,
+          "xs": 12,
+          "sm": 12,
+          "md": 6,
+          "lg": 4,
+          "xl": 4
+        },
         "email": {
           "type": "text",
           "label": "Charge Amps email",

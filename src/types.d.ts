@@ -8,6 +8,8 @@ declare global {
       apiKey: string;
       apiBaseUrl: string;
       pollInterval: number;
+      connectionMode: "cloud" | "ocpp";
+      ocppPort: number;
       rfid: string;
       rfidFormat: string;
       rfidLength: number;

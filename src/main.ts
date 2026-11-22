@@ -9,6 +9,7 @@ import {
   ConnectorSettings,
   Measurement,
 } from "./chargeamps-api";
+import { OcppClientConnection, OcppServer } from "./ocpp-server";
 
 const DIMMER_VALUES = ["off", "low", "medium", "high"];
 
@@ -28,6 +29,9 @@ interface PvAutomationState {
 
 class ChargeampsHalo extends Adapter {
   private api: ChargeAmpsApi | undefined;
+  private ocppServer: OcppServer | undefined;
+  private nextOcppTransactionId = 1;
+  private readonly ocppTransactions = new Map<string, number>();
   private pollTimer: ioBroker.Timeout | undefined;
   private pvStartTimer: ioBroker.Timeout | undefined;
   private pvStopTimer: ioBroker.Timeout | undefined;
@@ -63,6 +67,15 @@ class ChargeampsHalo extends Adapter {
     await this.setState("automation.pv.enabled", Boolean(this.config.pvAutomationEnabled) && !scheduleEnabled, true);
     await this.setState("automation.schedule.enabled", scheduleEnabled, true);
 
+    await this.subscribeStatesAsync("*");
+    await this.subscribePvAutomationStates();
+
+    if (this.usesOcpp()) {
+      await this.startOcppServer();
+      await this.scheduleNextScheduledCharge();
+      return;
+    }
+
     if (!this.config.email || !this.config.password || !this.config.apiKey) {
       this.log.warn("Please configure email, password and API key.");
       return;
@@ -75,8 +88,6 @@ class ChargeampsHalo extends Adapter {
       apiBaseUrl: this.config.apiBaseUrl,
     });
 
-    await this.subscribeStatesAsync("*");
-    await this.subscribePvAutomationStates();
     await this.poll();
     await this.evaluatePvAutomation("startup");
     await this.scheduleNextScheduledCharge();
@@ -90,6 +101,7 @@ class ChargeampsHalo extends Adapter {
       }
       this.clearPvTimers();
       this.clearScheduleTimer();
+      void this.ocppServer?.close();
       void this.setState("info.connection", false, true);
       callback();
     } catch {
@@ -107,7 +119,7 @@ class ChargeampsHalo extends Adapter {
   }
 
   private async poll(): Promise<void> {
-    if (!this.api || this.polling) {
+    if (this.usesOcpp() || !this.api || this.polling) {
       return;
     }
 
@@ -569,7 +581,7 @@ class ChargeampsHalo extends Adapter {
   }
 
   private async onStateChange(id: string, state: ioBroker.State | null | undefined): Promise<void> {
-    if (!state || !this.api) {
+    if (!state || (!this.api && !this.ocppServer)) {
       return;
     }
 
@@ -629,7 +641,11 @@ class ChargeampsHalo extends Adapter {
     const [, cpId] = relativeId.split(".");
     const chargePointId = this.chargePointIds.get(cpId);
     if (chargePointId) {
-      await this.api?.reboot(chargePointId);
+      if (this.usesOcpp()) {
+        await this.sendOcppCommand(chargePointId, "Reset", { type: "Soft" });
+      } else {
+        await this.api?.reboot(chargePointId);
+      }
     }
   }
 
@@ -795,19 +811,29 @@ class ChargeampsHalo extends Adapter {
   }
 
   private async remoteStartConnector(ref: ConnectorRef, lastActionState = "automation.pv.lastAction"): Promise<boolean> {
-    if (!this.config.rfid) {
+    if (!this.usesOcpp() && !this.config.rfid) {
       this.log.warn("Remote start was skipped because the Charge Amps API requires an RFID for this command.");
       await this.setStateChangedAsync(lastActionState, I18n.t("Remote start skipped: missing RFID"), true);
       return false;
     }
 
     await this.ensureConnectorOn(ref, "before remoteStart");
-    await this.api?.remoteStart(ref.chargePointId, ref.connectorId, {
-      rfid: this.config.rfid,
-      rfidFormat: this.config.rfidFormat || "Hex",
-      rfidLength: rfidLength(this.config.rfid, this.config.rfidFormat, Number(this.config.rfidLength)),
-      externalTransactionId: `iobroker-${Date.now()}`,
-    });
+    if (this.usesOcpp()) {
+      const response = await this.sendOcppCommand(ref.chargePointId, "RemoteStartTransaction", {
+        connectorId: ref.connectorId,
+        idTag: this.config.rfid || "ioBroker",
+      });
+      if (response.status !== "Accepted") {
+        throw new Error(`OCPP RemoteStartTransaction was ${String(response.status)}`);
+      }
+    } else {
+      await this.api?.remoteStart(ref.chargePointId, ref.connectorId, {
+        rfid: this.config.rfid,
+        rfidFormat: this.config.rfidFormat || "Hex",
+        rfidLength: rfidLength(this.config.rfid, this.config.rfidFormat, Number(this.config.rfidLength)),
+        externalTransactionId: `iobroker-${Date.now()}`,
+      });
+    }
     return true;
   }
 
@@ -821,6 +847,17 @@ class ChargeampsHalo extends Adapter {
   }
 
   private async remoteStopConnector(ref: ConnectorRef): Promise<void> {
+    if (this.usesOcpp()) {
+      const transactionId = this.ocppTransactions.get(connectorKey(ref.chargePointId, ref.connectorId));
+      if (transactionId === undefined) {
+        throw new Error("OCPP remote stop requires an active transaction ID");
+      }
+      const response = await this.sendOcppCommand(ref.chargePointId, "RemoteStopTransaction", { transactionId });
+      if (response.status !== "Accepted") {
+        throw new Error(`OCPP RemoteStopTransaction was ${String(response.status)}`);
+      }
+      return;
+    }
     await this.api?.remoteStop(ref.chargePointId, ref.connectorId);
   }
 
@@ -841,7 +878,7 @@ class ChargeampsHalo extends Adapter {
     }
 
     const changed = { ...settings, mode };
-    await this.api?.setConnectorSettings(changed);
+    await this.writeConnectorSettings(changed, settings);
     this.connectorSettings.set(key, changed);
 
     const ids = this.connectorObjectIds(ref);
@@ -858,7 +895,7 @@ class ChargeampsHalo extends Adapter {
   }
 
   private async evaluatePvAutomation(reason: string): Promise<void> {
-    if (!this.api || this.pvEvaluating) {
+    if ((!this.api && !this.ocppServer) || this.pvEvaluating) {
       return;
     }
 
@@ -1175,7 +1212,7 @@ class ChargeampsHalo extends Adapter {
 
     const normalizedCurrent = normalizeCurrent(current);
     const changed = { ...settings, maxCurrent: normalizedCurrent };
-    await this.api?.setConnectorSettings(changed);
+    await this.writeConnectorSettings(changed, settings);
     this.connectorSettings.set(connectorKey(ref.chargePointId, ref.connectorId), changed);
     const ids = this.connectorObjectIds(ref);
     if (ids) {
@@ -1196,7 +1233,7 @@ class ChargeampsHalo extends Adapter {
 
     const normalizedCurrent = normalizeCurrent(current);
     const changed = { ...settings, maxCurrent: normalizedCurrent };
-    await this.api?.setConnectorSettings(changed);
+    await this.writeConnectorSettings(changed, settings);
     this.connectorSettings.set(connectorKey(ref.chargePointId, ref.connectorId), changed);
     const ids = this.connectorObjectIds(ref);
     if (ids) {
@@ -1220,7 +1257,7 @@ class ChargeampsHalo extends Adapter {
     }
 
     const changed = { ...settings, mode: "Off" };
-    await this.api?.setConnectorSettings(changed);
+    await this.writeConnectorSettings(changed, settings);
     this.connectorSettings.set(connectorKey(ref.chargePointId, ref.connectorId), changed);
 
     const ids = this.connectorObjectIds(ref);
@@ -1298,6 +1335,273 @@ class ChargeampsHalo extends Adapter {
     );
   }
 
+  private usesOcpp(): boolean {
+    return this.config.connectionMode === "ocpp";
+  }
+
+  private async startOcppServer(): Promise<void> {
+    const port = Math.max(1, Math.min(65535, Number(this.config.ocppPort) || 9220));
+    const server = new OcppServer(this);
+    server.onClientConnect = client => this.log.info(`OCPP charge point connected: ${client.chargePointId}`);
+    server.onClientDisconnect = chargePointId => {
+      this.log.info(`OCPP charge point disconnected: ${chargePointId}`);
+      void this.setStateChangedAsync("info.connection", false, true);
+    };
+    server.onClientError = (client, action, error) =>
+      this.log.warn(`OCPP ${action || "connection"} error from ${client.chargePointId}: ${formatError(error)}`);
+    server.onRequest = (client, action, payload) => this.handleOcppRequest(client, action, payload);
+    await server.listen(port);
+    this.ocppServer = server;
+    this.log.info(`OCPP 1.6J server listening on ws://0.0.0.0:${port}/<ChargePointId>`);
+  }
+
+  private async sendOcppCommand(chargePointId: string, action: string, payload: Record<string, unknown>): Promise<Record<string, unknown>> {
+    const client = this.ocppServer?.getClient(chargePointId);
+    if (!client) {
+      throw new Error(`OCPP charge point ${chargePointId} is not connected`);
+    }
+    return client.sendCommand(action, payload);
+  }
+
+  private async handleOcppRequest(
+    client: OcppClientConnection,
+    action: string,
+    payload: Record<string, unknown>,
+  ): Promise<Record<string, unknown>> {
+    const chargePointId = client.chargePointId;
+    switch (action) {
+      case "BootNotification":
+        await this.ensureOcppConnector(chargePointId, 0, payload);
+        await this.setStateChangedAsync("info.connection", true, true);
+        return { status: "Accepted", currentTime: new Date().toISOString(), interval: 60 };
+      case "Heartbeat":
+        return { currentTime: new Date().toISOString() };
+      case "Authorize":
+        return { idTagInfo: { status: "Accepted" } };
+      case "StatusNotification":
+        await this.handleOcppStatus(chargePointId, payload);
+        return {};
+      case "MeterValues":
+        await this.handleOcppMeterValues(chargePointId, payload);
+        return {};
+      case "StartTransaction":
+        return this.handleOcppStartTransaction(chargePointId, payload);
+      case "StopTransaction":
+        await this.handleOcppStopTransaction(chargePointId, payload);
+        return {};
+      default:
+        this.log.debug(`Ignoring unsupported OCPP action ${action} from ${chargePointId}`);
+        return {};
+    }
+  }
+
+  private async ensureOcppConnector(
+    chargePointId: string,
+    connectorId: number,
+    boot: Record<string, unknown> = {},
+  ): Promise<void> {
+    const cpId = objectId(chargePointId);
+    const connectorObjectId = objectId(String(connectorId));
+    const chargePoint: ChargePoint = {
+      id: chargePointId,
+      name: String(boot.chargePointSerialNumber || chargePointId),
+      type: `${String(boot.chargePointVendor || "OCPP")} ${String(boot.chargePointModel || "1.6J")}`.trim(),
+      isLoadbalanced: false,
+      firmwareVersion: String(boot.firmwareVersion || ""),
+      hardwareVersion: String(boot.chargePointSerialNumber || ""),
+      connectors: [{ chargePointId, connectorId, type: "OCPP 1.6J" }],
+    };
+    await this.ensureChargePointObjects(chargePoint);
+    this.chargePointIds.set(cpId, chargePointId);
+    this.connectorIds.set(`${cpId}.${connectorObjectId}`, { chargePointId, connectorId });
+    this.chargePointSettings.set(chargePointId, { id: chargePointId, dimmer: "off", downLight: false });
+    const key = connectorKey(chargePointId, connectorId);
+    if (!this.connectorSettings.has(key)) {
+      this.connectorSettings.set(key, {
+        chargePointId,
+        connectorId,
+        mode: "Off",
+        rfidLock: false,
+        cableLock: false,
+        maxCurrent: null,
+      });
+    }
+    await this.setStateChangedAsync(`chargepoints.${cpId}.info.name`, chargePoint.name, true);
+    await this.setStateChangedAsync(`chargepoints.${cpId}.info.type`, chargePoint.type, true);
+    await this.setStateChangedAsync(`chargepoints.${cpId}.info.firmwareVersion`, chargePoint.firmwareVersion, true);
+    await this.setStateChangedAsync(`chargepoints.${cpId}.info.hardwareVersion`, chargePoint.hardwareVersion, true);
+    await this.setStateChangedAsync(`chargepoints.${cpId}.info.isLoadbalanced`, false, true);
+    const settings = this.connectorSettings.get(key);
+    await this.setStateChangedAsync(
+      `chargepoints.${cpId}.connectors.${connectorObjectId}.settings.mode`,
+      settings?.mode || "Off",
+      true,
+    );
+    await this.setStateChangedAsync(
+      `chargepoints.${cpId}.connectors.${connectorObjectId}.settings.maxCurrent`,
+      settings?.maxCurrent ?? null,
+      true,
+    );
+  }
+
+  private async handleOcppStatus(chargePointId: string, payload: Record<string, unknown>): Promise<void> {
+    const connectorId = Number(payload.connectorId);
+    if (!Number.isInteger(connectorId) || connectorId < 0) {
+      return;
+    }
+    await this.ensureOcppConnector(chargePointId, connectorId);
+    const status = String(payload.status || "Unknown");
+    const key = connectorKey(chargePointId, connectorId);
+    const previous = this.connectorStatuses.get(key);
+    const connectorStatus: ConnectorStatus = {
+      chargePointId,
+      connectorId,
+      totalConsumptionKwh: previous?.totalConsumptionKwh || 0,
+      status,
+      measurements: previous?.measurements,
+      sessionId: previous?.sessionId,
+      startTime: previous?.startTime,
+      endTime: previous?.endTime,
+    };
+    this.connectorStatuses.set(key, connectorStatus);
+    const cpId = objectId(chargePointId);
+    const id = objectId(String(connectorId));
+    await this.setStateChangedAsync(`chargepoints.${cpId}.status`, status, true);
+    await this.setStateChangedAsync(`chargepoints.${cpId}.connectors.${id}.status.status`, status, true);
+    await this.evaluatePvAutomation("OCPP status notification");
+  }
+
+  private async handleOcppMeterValues(chargePointId: string, payload: Record<string, unknown>): Promise<void> {
+    const connectorId = Number(payload.connectorId);
+    if (!Number.isInteger(connectorId) || connectorId < 0) {
+      return;
+    }
+    await this.ensureOcppConnector(chargePointId, connectorId);
+    const key = connectorKey(chargePointId, connectorId);
+    const status = this.connectorStatuses.get(key) || {
+      chargePointId,
+      connectorId,
+      totalConsumptionKwh: 0,
+      status: "Unknown",
+    };
+    const measurements = new Map((status.measurements || []).map(item => [item.phase, { ...item }]));
+    for (const meterValue of arrayValue(payload.meterValue)) {
+      for (const sample of arrayValue(meterValue.sampledValue)) {
+        const value = Number(sample.value);
+        if (!Number.isFinite(value)) {
+          continue;
+        }
+        const measurand = String(sample.measurand || "Energy.Active.Import.Register");
+        if (measurand === "Energy.Active.Import.Register") {
+          status.totalConsumptionKwh = String(sample.unit || "Wh").toLowerCase() === "kwh" ? value : value / 1000;
+          continue;
+        }
+        const phase = String(sample.phase || "total");
+        const measurement = measurements.get(phase) || { phase, current: 0, voltage: 0 };
+        if (measurand.startsWith("Current.")) {
+          measurement.current = value;
+        } else if (measurand.startsWith("Voltage")) {
+          measurement.voltage = value;
+        } else {
+          continue;
+        }
+        measurements.set(phase, measurement);
+      }
+    }
+    status.measurements = [...measurements.values()];
+    this.connectorStatuses.set(key, status);
+    const base = `chargepoints.${objectId(chargePointId)}.connectors.${objectId(String(connectorId))}.status`;
+    await this.setStateChangedAsync(`${base}.totalConsumptionKwh`, status.totalConsumptionKwh, true);
+    await this.updateConsumptionCounters(base, status);
+    await this.updateMeasurements(`${base}.measurements`, status.measurements);
+  }
+
+  private async handleOcppStartTransaction(
+    chargePointId: string,
+    payload: Record<string, unknown>,
+  ): Promise<Record<string, unknown>> {
+    const connectorId = Number(payload.connectorId);
+    await this.ensureOcppConnector(chargePointId, connectorId);
+    const transactionId = this.nextOcppTransactionId++;
+    const key = connectorKey(chargePointId, connectorId);
+    this.ocppTransactions.set(key, transactionId);
+    const status = this.connectorStatuses.get(key) || { chargePointId, connectorId, totalConsumptionKwh: 0, status: "Charging" };
+    status.status = "Charging";
+    status.sessionId = transactionId;
+    status.startTime = String(payload.timestamp || new Date().toISOString());
+    this.connectorStatuses.set(key, status);
+    const base = `chargepoints.${objectId(chargePointId)}.connectors.${objectId(String(connectorId))}.status`;
+    await this.setStateChangedAsync(`${base}.status`, "Charging", true);
+    await this.setStateChangedAsync(`${base}.sessionId`, transactionId, true);
+    await this.setStateChangedAsync(`${base}.startTime`, status.startTime, true);
+    return { transactionId, idTagInfo: { status: "Accepted" } };
+  }
+
+  private async handleOcppStopTransaction(chargePointId: string, payload: Record<string, unknown>): Promise<void> {
+    const transactionId = Number(payload.transactionId);
+    const entry = [...this.ocppTransactions.entries()].find(([key, id]) => key.startsWith(`${chargePointId}:`) && id === transactionId);
+    if (!entry) {
+      return;
+    }
+    const [key] = entry;
+    this.ocppTransactions.delete(key);
+    const status = this.connectorStatuses.get(key);
+    if (!status) {
+      return;
+    }
+    status.endTime = String(payload.timestamp || new Date().toISOString());
+    const connectorId = status.connectorId;
+    const base = `chargepoints.${objectId(chargePointId)}.connectors.${objectId(String(connectorId))}.status`;
+    await this.setStateChangedAsync(`${base}.endTime`, status.endTime, true);
+  }
+
+  private async writeConnectorSettings(changed: ConnectorSettings, previous: ConnectorSettings): Promise<void> {
+    if (!this.usesOcpp()) {
+      await this.api?.setConnectorSettings(changed);
+      return;
+    }
+    if (changed.rfidLock !== previous.rfidLock || changed.cableLock !== previous.cableLock) {
+      throw new Error("RFID and cable lock settings are not standardized in OCPP 1.6J");
+    }
+    if (changed.mode !== previous.mode) {
+      const response = await this.sendOcppCommand(changed.chargePointId, "ChangeAvailability", {
+        connectorId: changed.connectorId,
+        type: changed.mode === "Off" ? "Inoperative" : "Operative",
+      });
+      if (response.status !== "Accepted" && response.status !== "Scheduled") {
+        throw new Error(`OCPP ChangeAvailability was ${String(response.status)}`);
+      }
+    }
+    if (changed.maxCurrent !== previous.maxCurrent) {
+      if (changed.maxCurrent === null) {
+        await this.sendOcppCommand(changed.chargePointId, "ClearChargingProfile", {
+          connectorId: changed.connectorId,
+          chargingProfilePurpose: "TxDefaultProfile",
+        });
+      } else {
+        const transactionId = this.ocppTransactions.get(connectorKey(changed.chargePointId, changed.connectorId));
+        const response = await this.sendOcppCommand(changed.chargePointId, "SetChargingProfile", {
+          connectorId: changed.connectorId,
+          csChargingProfiles: {
+            chargingProfileId: 1,
+            transactionId,
+            stackLevel: 0,
+            chargingProfilePurpose: transactionId === undefined ? "TxDefaultProfile" : "TxProfile",
+            chargingProfileKind: "Relative",
+            chargingSchedule: {
+              duration: 86400,
+              chargingRateUnit: "A",
+              chargingSchedulePeriod: [{ startPeriod: 0, limit: changed.maxCurrent, numberPhases: this.config.pvPhases }],
+            },
+          },
+        });
+        if (response.status !== "Accepted") {
+          throw new Error(`OCPP SetChargingProfile was ${String(response.status)}`);
+        }
+      }
+    }
+  }
+
   private async handleSetting(relativeId: string, value: ioBroker.StateValue): Promise<void> {
     const parts = relativeId.split(".");
     const cpId = parts[1];
@@ -1316,6 +1620,9 @@ class ChargeampsHalo extends Adapter {
         changed.dimmer = String(value);
       } else if (parts[3] === "downLight") {
         changed.downLight = Boolean(value);
+      }
+      if (this.usesOcpp()) {
+        throw new Error("Charge point light settings are not supported by OCPP 1.6J");
       }
       await this.api?.setChargePointSettings(changed);
       this.chargePointSettings.set(chargePointId, changed);
@@ -1351,7 +1658,7 @@ class ChargeampsHalo extends Adapter {
       }
     }
 
-    await this.api?.setConnectorSettings(changed);
+    await this.writeConnectorSettings(changed, settings);
     this.connectorSettings.set(connectorKey(ref.chargePointId, ref.connectorId), changed);
   }
 
@@ -1367,6 +1674,12 @@ function objectId(value: string): string {
 
 function connectorKey(chargePointId: string, connectorId: number): string {
   return `${chargePointId}:${connectorId}`;
+}
+
+function arrayValue(value: unknown): Record<string, unknown>[] {
+  return Array.isArray(value)
+    ? value.filter((item): item is Record<string, unknown> => Boolean(item) && typeof item === "object")
+    : [];
 }
 
 function escapeRegExp(value: string): string {

@@ -1,5 +1,12 @@
 ![Logo](admin/chargeamps.png)
 
+[![NPM version](https://img.shields.io/npm/v/iobroker.chargeamps1.svg)](https://www.npmjs.com/package/iobroker.chargeamps1)
+[![Downloads](https://img.shields.io/npm/dm/iobroker.chargeamps1.svg)](https://www.npmjs.com/package/iobroker.chargeamps1)
+
+[![NPM](https://nodei.co/npm/iobroker.chargeamps1.png?downloads=true)](https://nodei.co/npm/iobroker.chargeamps1/)
+
+**Tests:** ![Test and Release](https://github.com/michipi85/ioBroker.chargeamps1/blob/main/.github/workflows/Test%20and%20Release/badge.svg)
+
 # Charge Amps for ioBroker
 
 ### ioBroker adapter for Charge Amps Halo wallboxes via the Charge Amps External REST API.
@@ -60,6 +67,14 @@ At the configured local time on the selected weekdays, the adapter sets `setting
 
 ## Funktion
 
+### Connection mode
+
+The adapter can use either the Charge Amps cloud API or a local OCPP 1.6J connection. Select the mode in the adapter configuration and restart the adapter after changing it.
+
+For **Local OCPP 1.6J**, configure the wallbox as an OCPP client and use `ws://<ioBroker-IP>:<OCPP-port>/<ChargePointId>` as its central-system URL. The default port is `9220`; `<ChargePointId>` is the identifier that becomes the existing `chargepoints.<ChargePointId>` object segment. No Charge Amps cloud credentials are required in this mode.
+
+The existing `chargepoints.*` data points are kept. OCPP status notifications, transactions and meter values update the same status data points. `remoteStart`, `remoteStop`, `enableCharging`, `disableCharging`, `reboot` and `settings.maxCurrent` are translated to standard OCPP 1.6J commands. Local `remoteStart` uses the configured RFID as OCPP `idTag`, or `ioBroker` when RFID is empty. Cloud-specific light settings and RFID/cable-lock settings have no standardized OCPP equivalent and cannot be changed in local mode.
+
 **The convenience commands change the connector mode:**
 
 - enableCharging sets mode to On and switches the wallbox/connector on.
@@ -100,6 +115,11 @@ At the configured local time on the selected weekdays, the adapter sets `setting
 - improve schedule handling with stop times if needed
 
 ## Changelog
+
+### **WORK IN PROGRESS**
+
+- Implement an option for local OCPP control
+
 ### 1.1.1 (2026-11-08)
 
 - bug fix schedule
