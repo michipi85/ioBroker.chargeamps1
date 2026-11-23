@@ -5,7 +5,7 @@
 
 [![NPM](https://nodei.co/npm/iobroker.chargeamps1.png?downloads=true)](https://nodei.co/npm/iobroker.chargeamps1/)
 
-**Tests:** ![Test and Release](https://github.com/michipi85/ioBroker.chargeamps1/blob/main/.github/workflows/Test%20and%20Release/badge.svg)
+**Tests:** ![Test and Release](https://github.com/michipi85/ioBroker.chargeamps1/workflows/Test%20and%20Release/badge.svg)
 
 # Charge Amps for ioBroker
 
