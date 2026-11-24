@@ -1,9 +1,11 @@
 ![Logo](admin/chargeamps.png)
 
+![Number of Installations](http://iobroker.live/badges/chargeamps1-installed.svg)
+![Number of Installations](http://iobroker.live/badges/chargeamps1-stable.svg)
 [![NPM version](https://img.shields.io/npm/v/iobroker.chargeamps1.svg)](https://www.npmjs.com/package/iobroker.chargeamps1)
 [![Downloads](https://img.shields.io/npm/dm/iobroker.chargeamps1.svg)](https://www.npmjs.com/package/iobroker.chargeamps1)
 
-[![NPM](https://nodei.co/npm/iobroker.chargeamps1.png?downloads=true)](https://nodei.co/npm/iobroker.chargeamps1/)
+[![NPM](https://nodei.co/npm/iobroker.chargeamps1.svg?data=d,s)](https://nodei.co/npm/iobroker.chargeamps1/)
 
 **Tests:** ![Test and Release](https://github.com/michipi85/ioBroker.chargeamps1/workflows/Test%20and%20Release/badge.svg)
 
