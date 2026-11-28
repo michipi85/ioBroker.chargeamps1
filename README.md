@@ -1,7 +1,6 @@
 ![Logo](admin/chargeamps.png)
 
 ![Number of Installations](http://iobroker.live/badges/chargeamps1-installed.svg)
-![Number of Installations](http://iobroker.live/badges/chargeamps1-stable.svg)
 [![NPM version](https://img.shields.io/npm/v/iobroker.chargeamps1.svg)](https://www.npmjs.com/package/iobroker.chargeamps1)
 [![Downloads](https://img.shields.io/npm/dm/iobroker.chargeamps1.svg)](https://www.npmjs.com/package/iobroker.chargeamps1)
 
@@ -122,6 +121,8 @@ The existing `chargepoints.*` data points are kept. OCPP status notifications, t
 
 - Implement an option for local OCPP control
 - Fix consumption counters after meter resets or source changes
+- Calculate total voltage from available phase voltages
+- Do not create a physical connector for OCPP connector ID 0
 
 ### 1.1.1 (2026-11-08)
 

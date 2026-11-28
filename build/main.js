@@ -1094,7 +1094,7 @@ class ChargeampsHalo extends adapter_core_1.Adapter {
         const chargePointId = client.chargePointId;
         switch (action) {
             case "BootNotification":
-                await this.ensureOcppConnector(chargePointId, 0, payload);
+                await this.ensureOcppChargePoint(chargePointId, payload);
                 await this.setStateChangedAsync("info.connection", true, true);
                 return { status: "Accepted", currentTime: new Date().toISOString(), interval: 60 };
             case "Heartbeat":
@@ -1153,9 +1153,42 @@ class ChargeampsHalo extends adapter_core_1.Adapter {
         await this.setStateChangedAsync(`chargepoints.${cpId}.connectors.${connectorObjectId}.settings.mode`, settings?.mode || "Off", true);
         await this.setStateChangedAsync(`chargepoints.${cpId}.connectors.${connectorObjectId}.settings.maxCurrent`, settings?.maxCurrent ?? null, true);
     }
+    async ensureOcppChargePoint(chargePointId, boot = {}) {
+        const cpId = objectId(chargePointId);
+        const chargePoint = {
+            id: chargePointId,
+            name: String(boot.chargePointSerialNumber || chargePointId),
+            type: `${String(boot.chargePointVendor || "OCPP")} ${String(boot.chargePointModel || "1.6J")}`.trim(),
+            isLoadbalanced: false,
+            firmwareVersion: String(boot.firmwareVersion || ""),
+            hardwareVersion: String(boot.chargePointSerialNumber || ""),
+            connectors: [],
+        };
+        await this.ensureChargePointObjects(chargePoint);
+        this.chargePointIds.set(cpId, chargePointId);
+        this.chargePointSettings.set(chargePointId, { id: chargePointId, dimmer: "off", downLight: false });
+        await this.setStateChangedAsync(`chargepoints.${cpId}.info.name`, chargePoint.name, true);
+        await this.setStateChangedAsync(`chargepoints.${cpId}.info.type`, chargePoint.type, true);
+        await this.setStateChangedAsync(`chargepoints.${cpId}.info.firmwareVersion`, chargePoint.firmwareVersion, true);
+        await this.setStateChangedAsync(`chargepoints.${cpId}.info.hardwareVersion`, chargePoint.hardwareVersion, true);
+        await this.setStateChangedAsync(`chargepoints.${cpId}.info.isLoadbalanced`, false, true);
+        const obsoleteConnectorId = `${cpId}.0`;
+        if (this.connectorIds.has(obsoleteConnectorId)) {
+            this.connectorIds.delete(obsoleteConnectorId);
+        }
+        await this.delObjectAsync(`chargepoints.${cpId}.connectors.0`, { recursive: true }).catch(() => undefined);
+    }
     async handleOcppStatus(chargePointId, payload) {
         const connectorId = Number(payload.connectorId);
         if (!Number.isInteger(connectorId) || connectorId < 0) {
+            return;
+        }
+        if (connectorId === 0) {
+            const cpId = objectId(chargePointId);
+            if (!this.chargePointIds.has(cpId)) {
+                await this.ensureOcppChargePoint(chargePointId);
+            }
+            await this.setStateChangedAsync(`chargepoints.${cpId}.status`, String(payload.status || "Unknown"), true);
             return;
         }
         await this.ensureOcppConnector(chargePointId, connectorId);
@@ -1182,6 +1215,9 @@ class ChargeampsHalo extends adapter_core_1.Adapter {
     async handleOcppMeterValues(chargePointId, payload) {
         const connectorId = Number(payload.connectorId);
         if (!Number.isInteger(connectorId) || connectorId < 0) {
+            return;
+        }
+        if (connectorId === 0) {
             return;
         }
         await this.ensureOcppConnector(chargePointId, connectorId);
@@ -1217,6 +1253,13 @@ class ChargeampsHalo extends adapter_core_1.Adapter {
                 }
                 measurements.set(phase, measurement);
             }
+        }
+        const totalMeasurement = measurements.get("total");
+        const phaseVoltages = [...measurements.values()]
+            .filter(measurement => /^L[1-3]$/i.test(measurement.phase) && measurement.voltage > 0)
+            .map(measurement => measurement.voltage);
+        if (totalMeasurement && totalMeasurement.voltage === 0 && phaseVoltages.length) {
+            totalMeasurement.voltage = phaseVoltages.reduce((sum, voltage) => sum + voltage, 0) / phaseVoltages.length;
         }
         status.measurements = [...measurements.values()];
         this.connectorStatuses.set(key, status);
