@@ -125,6 +125,7 @@ The existing `chargepoints.*` data points are kept. OCPP status notifications, t
 - Do not create a physical connector for OCPP connector ID 0
 - Hide cloud credentials and API settings in local OCPP mode
 - Set connection state when an OCPP charge point connects
+- Restore OCPP transaction IDs for remote stop and reset command buttons immediately
 
 ### 1.1.1 (2026-11-08)
 

@@ -434,6 +434,9 @@ class ChargeampsHalo extends adapter_core_1.Adapter {
         const relativeId = id.slice(ownId.length);
         try {
             let resetCommand = false;
+            if (relativeId.includes(".commands.") && state.val === true) {
+                await this.setStateAsync(relativeId, false, true);
+            }
             if (relativeId.endsWith(".commands.reboot") && state.val === true) {
                 resetCommand = true;
                 await this.handleReboot(relativeId);
@@ -667,7 +670,18 @@ class ChargeampsHalo extends adapter_core_1.Adapter {
     }
     async remoteStopConnector(ref) {
         if (this.usesOcpp()) {
-            const transactionId = this.ocppTransactions.get(connectorKey(ref.chargePointId, ref.connectorId));
+            let transactionId = this.ocppTransactions.get(connectorKey(ref.chargePointId, ref.connectorId));
+            if (transactionId === undefined) {
+                const ids = this.connectorObjectIds(ref);
+                const state = ids
+                    ? await this.getStateAsync(`chargepoints.${ids.cpId}.connectors.${ids.connectorId}.status.sessionId`)
+                    : undefined;
+                const persistedTransactionId = Number(state?.val);
+                if (Number.isInteger(persistedTransactionId) && persistedTransactionId > 0) {
+                    transactionId = persistedTransactionId;
+                    this.ocppTransactions.set(connectorKey(ref.chargePointId, ref.connectorId), transactionId);
+                }
+            }
             if (transactionId === undefined) {
                 throw new Error("OCPP remote stop requires an active transaction ID");
             }
@@ -1301,9 +1315,11 @@ class ChargeampsHalo extends adapter_core_1.Adapter {
             return;
         }
         status.endTime = String(payload.timestamp || new Date().toISOString());
+        status.sessionId = null;
         const connectorId = status.connectorId;
         const base = `chargepoints.${objectId(chargePointId)}.connectors.${objectId(String(connectorId))}.status`;
         await this.setStateChangedAsync(`${base}.endTime`, status.endTime, true);
+        await this.setStateChangedAsync(`${base}.sessionId`, null, true);
     }
     async writeConnectorSettings(changed, previous) {
         if (!this.usesOcpp()) {
