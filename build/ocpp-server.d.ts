@@ -28,6 +28,7 @@ export declare class OcppServer {
     onClientError?: (client: OcppClientConnection, action: string | undefined, error: Error) => void;
     constructor(adapter: Pick<ioBroker.Adapter, "setTimeout" | "clearTimeout">);
     getClient(chargePointId: string): OcppClientConnection | undefined;
+    hasClients(): boolean;
     listen(port: number): Promise<void>;
     close(): Promise<void>;
     private handleUpgrade;

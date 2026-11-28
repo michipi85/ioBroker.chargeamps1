@@ -1072,10 +1072,13 @@ class ChargeampsHalo extends adapter_core_1.Adapter {
     async startOcppServer() {
         const port = Math.max(1, Math.min(65535, Number(this.config.ocppPort) || 9220));
         const server = new ocpp_server_1.OcppServer(this);
-        server.onClientConnect = client => this.log.info(`OCPP charge point connected: ${client.chargePointId}`);
+        server.onClientConnect = client => {
+            this.log.info(`OCPP charge point connected: ${client.chargePointId}`);
+            void this.setStateChangedAsync("info.connection", true, true);
+        };
         server.onClientDisconnect = chargePointId => {
             this.log.info(`OCPP charge point disconnected: ${chargePointId}`);
-            void this.setStateChangedAsync("info.connection", false, true);
+            void this.setStateChangedAsync("info.connection", server.hasClients(), true);
         };
         server.onClientError = (client, action, error) => this.log.warn(`OCPP ${action || "connection"} error from ${client.chargePointId}: ${formatError(error)}`);
         server.onRequest = (client, action, payload) => this.handleOcppRequest(client, action, payload);

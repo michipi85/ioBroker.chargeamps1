@@ -148,6 +148,10 @@ export class OcppServer {
     return this.clients.get(chargePointId);
   }
 
+  public hasClients(): boolean {
+    return this.clients.size > 0;
+  }
+
   public async listen(port: number): Promise<void> {
     await new Promise<void>((resolve, reject) => {
       this.httpServer.once("error", reject);

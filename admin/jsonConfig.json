@@ -27,6 +27,7 @@
           "type": "number",
           "label": "OCPP server port",
           "help": "Configure the wallbox to connect to ws://<ioBroker-IP>:<port>/<ChargePointId>.",
+          "hidden": "data.connectionMode !== 'ocpp'",
           "min": 1,
           "max": 65535,
           "xs": 12,
@@ -38,6 +39,7 @@
         "email": {
           "type": "text",
           "label": "Charge Amps email",
+          "hidden": "data.connectionMode === 'ocpp'",
           "newLine": true,
           "xs": 12,
           "sm": 12,
@@ -48,6 +50,7 @@
         "password": {
           "type": "password",
           "label": "Charge Amps password",
+          "hidden": "data.connectionMode === 'ocpp'",
           "newLine": true,
           "xs": 12,
           "sm": 12,
@@ -58,6 +61,7 @@
         "apiKey": {
           "type": "password",
           "label": "External API key",
+          "hidden": "data.connectionMode === 'ocpp'",
           "xs": 12,
           "sm": 12,
           "md": 8,
@@ -68,6 +72,7 @@
         "Api settings": {
           "type": "header",
           "text": "Api settings",
+          "hidden": "data.connectionMode === 'ocpp'",
           "size": 2,
           "newLine": true
         },
@@ -75,6 +80,7 @@
         "apiBaseUrl": {
           "type": "text",
           "label": "API base URL",
+          "hidden": "data.connectionMode === 'ocpp'",
           "newLine": true,
           "xs": 12,
           "sm": 12,
@@ -85,6 +91,7 @@
         "pollInterval": {
           "type": "number",
           "label": "Poll interval in seconds",
+          "hidden": "data.connectionMode === 'ocpp'",
           "min": 30,
           "xs": 12,
           "sm": 12,
