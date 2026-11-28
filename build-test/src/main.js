@@ -184,13 +184,13 @@ class ChargeampsHalo extends adapter_core_1.Adapter {
         const dayKey = formatDayKey(now);
         const monthKey = dayKey.slice(0, 7);
         const sessionId = status.sessionId === null || status.sessionId === undefined ? "" : String(status.sessionId);
-        const [storedDay, storedMonth, storedSessionId, storedLastTotal, storedDaily, storedMonthly] = await Promise.all([
+        const [storedDay, storedMonth, storedLastTotal, storedDaily, storedMonthly, storedSource] = await Promise.all([
             this.getStateAsync(`${statusBase}.counterDay`),
             this.getStateAsync(`${statusBase}.counterMonth`),
-            this.getStateAsync(`${statusBase}.counterSessionId`),
             this.getStateAsync(`${statusBase}.lastCounterTotalConsumptionKwh`),
             this.getStateAsync(`${statusBase}.dailyConsumptionKwh`),
             this.getStateAsync(`${statusBase}.monthlyConsumptionKwh`),
+            this.getStateAsync(`${statusBase}.counterSource`),
         ]);
         let dailyConsumption = stateNumber(storedDaily) ?? 0;
         let monthlyConsumption = stateNumber(storedMonthly) ?? 0;
@@ -203,13 +203,29 @@ class ChargeampsHalo extends adapter_core_1.Adapter {
             await this.setStateChangedAsync(`${statusBase}.counterMonth`, monthKey, true);
         }
         const previousTotal = stateNumber(storedLastTotal);
+        const counterSource = this.usesOcpp() ? "ocpp" : "cloud";
+        const previousSource = typeof storedSource?.val === "string" ? storedSource.val : "";
+        const isFirstOcppValue = counterSource === "ocpp" && previousSource !== "ocpp";
         let delta = 0;
-        if (previousTotal !== null) {
+        if (previousTotal !== null && !isFirstOcppValue) {
             delta = totalConsumptionKwh - previousTotal;
             if (delta < 0) {
-                const previousSessionId = storedSessionId?.val === null || storedSessionId?.val === undefined ? "" : String(storedSessionId.val);
-                delta = sessionId && previousSessionId && sessionId !== previousSessionId ? totalConsumptionKwh : 0;
+                // A lower meter value means the source was reset or replaced. It is a new baseline,
+                // never consumption of the new session.
+                delta = 0;
             }
+        }
+        // Repair the one-time jump caused by the former reset handling when upgrading to OCPP.
+        const legacyJump = isFirstOcppValue
+            && !previousSource
+            && totalConsumptionKwh > 0.01
+            && Math.abs(dailyConsumption - totalConsumptionKwh) < 0.001
+            && monthlyConsumption >= totalConsumptionKwh - 0.001
+            && (previousTotal === null || previousTotal >= totalConsumptionKwh - 0.001);
+        if (legacyJump) {
+            dailyConsumption = 0;
+            monthlyConsumption = Math.max(0, monthlyConsumption - totalConsumptionKwh);
+            this.log.warn(`Corrected invalid consumption-counter jump at ${statusBase}`);
         }
         if (delta > 0) {
             dailyConsumption += delta;
@@ -219,6 +235,7 @@ class ChargeampsHalo extends adapter_core_1.Adapter {
         await this.setStateChangedAsync(`${statusBase}.monthlyConsumptionKwh`, roundKwh(monthlyConsumption), true);
         await this.setStateChangedAsync(`${statusBase}.lastCounterTotalConsumptionKwh`, totalConsumptionKwh, true);
         await this.setStateChangedAsync(`${statusBase}.counterSessionId`, sessionId, true);
+        await this.setStateChangedAsync(`${statusBase}.counterSource`, counterSource, true);
     }
     async ensureBaseObjects() {
         await this.extendObjectAsync("info", {
@@ -363,6 +380,7 @@ class ChargeampsHalo extends adapter_core_1.Adapter {
             await this.ensureState(`${base}.status.counterDay`, "Counter day", "string", "value", undefined, false);
             await this.ensureState(`${base}.status.counterMonth`, "Counter month", "string", "value", undefined, false);
             await this.ensureState(`${base}.status.counterSessionId`, "Counter session ID", "string", "value", undefined, false);
+            await this.ensureState(`${base}.status.counterSource`, "Counter source", "string", "value", undefined, false);
             await this.extendObjectAsync(`${base}.settings`, {
                 type: "channel",
                 common: { name: "Settings" },

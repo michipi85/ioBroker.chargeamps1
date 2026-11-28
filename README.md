@@ -121,6 +121,7 @@ The existing `chargepoints.*` data points are kept. OCPP status notifications, t
 ### **WORK IN PROGRESS**
 
 - Implement an option for local OCPP control
+- Fix consumption counters after meter resets or source changes
 
 ### 1.1.1 (2026-11-08)
 
